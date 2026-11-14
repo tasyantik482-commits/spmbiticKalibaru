@@ -1,8 +1,21 @@
-import React, { useState } from 'react';
-import { BookOpen, FileCheck2, Menu, School, ShieldCheck, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import {
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  FileCheck2,
+  Menu,
+  School,
+  X,
+} from 'lucide-react';
 import heroCampusImg from './assets/images/hero_itic_school_campus_1794616635107.jpg';
-import programTahfidzImg from './assets/images/program_tahfidz_learning_1794616621064.jpg';
-import programGreenImg from './assets/images/program_green_campus_1794616621569.jpg';
+import kegiatanSholatDhuhaImg from './assets/images/gallery/kegiatan_sholat_dhuha.jpg';
+import kegiatanKreasiSiswaImg from './assets/images/gallery/kegiatan_kreasi_siswa.jpg';
+import kegiatanProyekP5Img from './assets/images/gallery/kegiatan_proyek_p5.jpg';
+import kegiatanPresentasiKelasImg from './assets/images/gallery/kegiatan_presentasi_kelas.jpg';
+import kegiatanKaryaKelas4Img from './assets/images/gallery/kegiatan_karya_kelas4.jpg';
+import kegiatanKelasKebersihanImg from './assets/images/gallery/kegiatan_kelas_kebersihan.jpg';
 import appsScriptCode from '../google-apps-script/Code.gs?raw';
 import RegistrationForm from './components/RegistrationForm';
 import StatusCheckPanel from './components/StatusCheckPanel';
@@ -11,6 +24,16 @@ import AdminDashboard from './components/AdminDashboard';
 
 type PortalTab = 'daftar' | 'status';
 type ViewMode = 'portal' | 'admin';
+
+interface GalleryItem {
+  id: string;
+  src: string;
+  title: string;
+  category: string;
+  context: string;
+  caption: string;
+  alt: string;
+}
 
 const FOKUS_PENDIDIKAN = [
   {
@@ -30,6 +53,69 @@ const FOKUS_PENDIDIKAN = [
     title: 'Hidup bersih dan disiplin',
     description:
       'Menumbuhkan kebiasaan menjaga kebersihan dan disiplin dalam kegiatan sehari-hari.',
+  },
+];
+
+const GALERI_KEGIATAN: GalleryItem[] = [
+  {
+    id: 'sholat-dhuha',
+    src: kegiatanSholatDhuhaImg,
+    title: 'Pembiasaan Sholat Dhuha Berjamaah',
+    category: 'Ibadah & Adab',
+    context: 'Kegiatan Harian Siswa',
+    caption:
+      'Peserta didik dibimbing langsung oleh guru melaksanakan sholat berjamaah dengan tertib untuk membangun kedisiplinan ibadah sejak dini.',
+    alt: 'Siswa SDIT Insan Cendekia Kalibaru melaksanakan sholat dhuha berjamaah dibimbing guru',
+  },
+  {
+    id: 'kreasi-siswa',
+    src: kegiatanKreasiSiswaImg,
+    title: 'Kreasi Seni & Motorik Siswa',
+    category: 'Seni & Kreativitas',
+    context: 'Pembelajaran Kelas',
+    caption:
+      'Siswi SDIT Insan Cendekia Kalibaru melatih kreativitas dan kerja sama melalui praktik melukis tangan yang menyenangkan di dalam kelas.',
+    alt: 'Empat siswi SDIT Insan Cendekia Kalibaru tersenyum menunjukkan hasil lukis tangan kreatif di kelas',
+  },
+  {
+    id: 'proyek-p5',
+    src: kegiatanProyekP5Img,
+    title: 'Proyek P5 Daur Ulang Plastik',
+    category: 'Proyek P5',
+    context: 'Kelas 1',
+    caption:
+      'Siswa kelas 1 berkreasi mengolah bahan plastik bekas menjadi karya hiasan bertema kupu-kupu dan lebah sekaligus menumbuhkan kepedulian lingkungan.',
+    alt: 'Siswa kelas 1 SDIT Insan Cendekia Kalibaru berseragam pramuka menampilkan karya daur ulang plastik',
+  },
+  {
+    id: 'presentasi-kelas',
+    src: kegiatanPresentasiKelasImg,
+    title: 'Presentasi Pembelajaran IPAS & Bahasa',
+    category: 'Literasi & Presentasi',
+    context: 'Kelas Aktif',
+    caption:
+      'Peserta didik berlatih menyampaikan gagasan dan hasil belajar IPAS serta Bahasa Indonesia secara percaya diri di depan teman-temannya.',
+    alt: 'Siswi SDIT Insan Cendekia Kalibaru mempresentasikan materi pembelajaran IPAS dan Bahasa Indonesia di kelas',
+  },
+  {
+    id: 'karya-kelas4',
+    src: kegiatanKaryaKelas4Img,
+    title: 'Pameran Karya Produk Kreatif',
+    category: 'Proyek Kelas',
+    context: 'Kelas 4',
+    caption:
+      'Siswa kelas 4 merancang dan mempresentasikan produk kerajinan fungsional hasil kolaborasi kelompok bersama wali kelas.',
+    alt: 'Siswa kelas 4 SDIT Insan Cendekia Kalibaru menampilkan hasil karya kerajinan kreatif di depan kelas',
+  },
+  {
+    id: 'kelas-kebersihan',
+    src: kegiatanKelasKebersihanImg,
+    title: 'Pentas Lagu Edukatif Hidup Bersih',
+    category: 'Karakter & Budaya Bersih',
+    context: 'Kelas 2',
+    caption:
+      'Pembiasaan hidup bersih dan sehat dikemas melalui nyanyian tematik dan gerak bersama agar mudah dipraktikkan setiap hari.',
+    alt: 'Siswi kelas 2 SDIT Insan Cendekia Kalibaru membawakan lagu edukatif tentang kebersihan di sekolah',
   },
 ];
 
@@ -65,8 +151,29 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
 
   const [heroImgError, setHeroImgError] = useState(false);
-  const [tahfidzImgError, setTahfidzImgError] = useState(false);
-  const [greenImgError, setGreenImgError] = useState(false);
+  const [brokenGalleryIds, setBrokenGalleryIds] = useState<Record<string, boolean>>({});
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const markGalleryBroken = (id: string) => {
+    setBrokenGalleryIds((prev) => ({ ...prev, [id]: true }));
+  };
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setLightboxIndex(null);
+      } else if (event.key === 'ArrowRight') {
+        setLightboxIndex((prev) => (prev === null ? null : (prev + 1) % GALERI_KEGIATAN.length));
+      } else if (event.key === 'ArrowLeft') {
+        setLightboxIndex((prev) =>
+          prev === null ? null : (prev - 1 + GALERI_KEGIATAN.length) % GALERI_KEGIATAN.length
+        );
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxIndex]);
 
   const navigateToSection = (sectionId: string) => {
     setViewMode('portal');
@@ -103,6 +210,8 @@ export default function App() {
     scrollToPortal('status');
   };
 
+  const activeLightboxItem = lightboxIndex !== null ? GALERI_KEGIATAN[lightboxIndex] : null;
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F9F7] text-[#112218]">
       {/* Top Bar Contract: 3 zones separated by clean responsive gap */}
@@ -121,17 +230,17 @@ export default function App() {
           <nav className="hidden md:flex items-center gap-4 lg:gap-7 text-[13px] lg:text-sm font-medium text-[#42554A]">
             <button
               type="button"
-              onClick={() => navigateToSection('beranda')}
-              className="hover:text-[#0F2419] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 cursor-pointer py-2"
-            >
-              Beranda
-            </button>
-            <button
-              type="button"
               onClick={() => navigateToSection('visi-misi')}
               className="hover:text-[#0F2419] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 cursor-pointer py-2"
             >
               Visi &amp; Misi
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateToSection('galeri')}
+              className="hover:text-[#0F2419] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 cursor-pointer py-2"
+            >
+              Galeri
             </button>
             <button
               type="button"
@@ -193,6 +302,13 @@ export default function App() {
               className="flex items-center w-full text-left min-h-[44px] px-2 text-sm font-medium text-[#1D3126] rounded-lg active:bg-[#F2F6F3]"
             >
               Visi &amp; Misi
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateToSection('galeri')}
+              className="flex items-center w-full text-left min-h-[44px] px-2 text-sm font-medium text-[#1D3126] rounded-lg active:bg-[#F2F6F3]"
+            >
+              Galeri Kegiatan
             </button>
             <button
               type="button"
@@ -395,51 +511,122 @@ export default function App() {
             </div>
 
             <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
-              <figure className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col">
-                <div className="aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative">
-                  {!tahfidzImgError ? (
-                    <img
-                      src={programTahfidzImg}
-                      alt="Kegiatan literasi dan pembelajaran Al-Qur'an siswa SDIT Insan Cendekia Kalibaru"
-                      referrerPolicy="no-referrer"
-                      onError={() => setTahfidzImgError(true)}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#E4ECE6] text-[#0E6245]">
-                      <BookOpen className="w-10 h-10 opacity-50" />
-                    </div>
-                  )}
-                </div>
-                <figcaption className="px-5 py-4 text-xs sm:text-sm text-[#42554A]">
-                  <span className="font-semibold text-[#0F2419]">Pembinaan Ibadah &amp; Cinta Al-Qur’an</span>
-                  <span aria-hidden="true"> · </span>
-                  <span>Pendampingan belajar yang hangat untuk menumbuhkan akhlak mulia dan kecintaan membaca Al-Qur’an</span>
-                </figcaption>
-              </figure>
+              {[0, 1].map((idx) => {
+                const item = GALERI_KEGIATAN[idx];
+                const isBroken = Boolean(brokenGalleryIds[item.id]);
+                return (
+                  <figure
+                    key={item.id}
+                    className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIndex(idx)}
+                      className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
+                      aria-label={`Perbesar foto ${item.title}`}
+                    >
+                      {!isBroken ? (
+                        <img
+                          src={item.src}
+                          alt={item.alt}
+                          referrerPolicy="no-referrer"
+                          loading="lazy"
+                          onError={() => markGalleryBroken(item.id)}
+                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-[#E4ECE6] text-[#0E6245]">
+                          <Camera className="w-10 h-10 opacity-50" />
+                        </div>
+                      )}
+                    </button>
+                    <figcaption className="px-5 py-4 text-xs sm:text-sm text-[#42554A]">
+                      <span className="font-semibold text-[#0F2419]">{item.title}</span>
+                      <span aria-hidden="true"> · </span>
+                      <span>{item.caption}</span>
+                    </figcaption>
+                  </figure>
+                );
+              })}
+            </div>
+          </div>
+        </section>
 
-              <figure className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col">
-                <div className="aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative">
-                  {!greenImgError ? (
-                    <img
-                      src={programGreenImg}
-                      alt="Halaman hijau dan ruang kelas nyaman SDIT Insan Cendekia Kalibaru"
-                      referrerPolicy="no-referrer"
-                      onError={() => setGreenImgError(true)}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#E4ECE6] text-[#0E6245]">
-                      <ShieldCheck className="w-10 h-10 opacity-50" />
+        {/* Dokumentasi Kegiatan Nyata Siswa */}
+        <section id="galeri" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              <div className="space-y-1.5 max-w-2xl">
+                <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                  Dokumentasi Kegiatan Nyata Siswa
+                </p>
+                <h2
+                  className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
+                  style={{ textWrap: 'balance' }}
+                >
+                  Aktivitas Belajar &amp; Pembiasaan Anak di SDIT Insan Cendekia Kalibaru
+                </h2>
+                <p className="text-sm text-[#4A5D52] leading-relaxed">
+                  Cuplikan dokumentasi asli kegiatan ibadah, proyek kreatif, literasi kelas, dan pembiasaan hidup bersih peserta didik. Ketuk foto untuk melihat tampilan penuh.
+                </p>
+              </div>
+              <a
+                href="https://www.youtube.com/channel/UCtOE7_iytj8rGlIZ3UTHnjA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 text-xs font-semibold text-[#0E6245] bg-white border border-[#DCE4DE] rounded-lg hover:bg-[#F2F6F3] transition-colors whitespace-nowrap shrink-0 self-start md:self-auto"
+              >
+                <span>Kanal Resmi Sekolah</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+              {GALERI_KEGIATAN.map((item, idx) => {
+                const isBroken = Boolean(brokenGalleryIds[item.id]);
+                return (
+                  <article
+                    key={item.id}
+                    className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIndex(idx)}
+                      className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
+                      aria-label={`Lihat foto ${item.title} ukuran penuh`}
+                    >
+                      {!isBroken ? (
+                        <img
+                          src={item.src}
+                          alt={item.alt}
+                          referrerPolicy="no-referrer"
+                          loading="lazy"
+                          onError={() => markGalleryBroken(item.id)}
+                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#E4ECE6] text-[#0E6245] px-4 text-center">
+                          <Camera className="w-8 h-8 opacity-50" />
+                          <span className="text-xs font-medium">{item.title}</span>
+                        </div>
+                      )}
+                    </button>
+                    <div className="p-4 sm:p-5 flex-1 flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 text-xs font-medium text-[#5A6D62]">
+                        <span className="text-[#0E6245]">{item.category}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{item.context}</span>
+                      </div>
+                      <h3 className="font-display text-base font-semibold text-[#0F2419] leading-snug">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-[#4A5D52] leading-relaxed">
+                        {item.caption}
+                      </p>
                     </div>
-                  )}
-                </div>
-                <figcaption className="px-5 py-4 text-xs sm:text-sm text-[#42554A]">
-                  <span className="font-semibold text-[#0F2419]">Lingkungan Belajar Bersih &amp; Disiplin</span>
-                  <span aria-hidden="true"> · </span>
-                  <span>Suasana sekolah yang asri dan nyaman untuk mendukung pembelajaran aktif serta kemandirian peserta didik</span>
-                </figcaption>
-              </figure>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -605,6 +792,90 @@ export default function App() {
         onClose={() => setModalOpen(false)}
         appsScriptCode={appsScriptCode}
       />
+
+      {/* Lightbox Foto Kegiatan Siswa */}
+      {activeLightboxItem && lightboxIndex !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={activeLightboxItem.title}
+          className="no-print fixed inset-0 z-50 bg-[#08150E]/85 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <div
+            className="bg-white border border-[#DCE4DE] rounded-2xl max-w-4xl w-full overflow-hidden shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 sm:px-6 py-3.5 border-b border-[#E6ECE7] flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-[#0E6245] truncate">
+                  {activeLightboxItem.category} · {activeLightboxItem.context}
+                </div>
+                <h3 className="font-display text-sm sm:text-base font-semibold text-[#0F2419] truncate">
+                  {activeLightboxItem.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(null)}
+                aria-label="Tutup tampilan foto"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-[#DCE4DE] text-[#1D3126] hover:bg-[#F2F6F3] transition-colors shrink-0 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-[#0F2419] aspect-[16/10] sm:aspect-[16/9] max-h-[65vh] w-full flex items-center justify-center overflow-hidden">
+              {!brokenGalleryIds[activeLightboxItem.id] ? (
+                <img
+                  src={activeLightboxItem.src}
+                  alt={activeLightboxItem.alt}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-white/70">
+                  <Camera className="w-10 h-10" />
+                  <span className="text-xs">Foto tidak dapat dimuat</span>
+                </div>
+              )}
+            </div>
+
+            <div className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white">
+              <p className="text-xs sm:text-sm text-[#42554A] leading-relaxed">
+                {activeLightboxItem.caption}
+              </p>
+              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+                <span className="font-mono text-xs text-[#5A6D62] tabular-nums mr-1">
+                  {lightboxIndex + 1} / {GALERI_KEGIATAN.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLightboxIndex(
+                      (lightboxIndex - 1 + GALERI_KEGIATAN.length) % GALERI_KEGIATAN.length
+                    )
+                  }
+                  aria-label="Foto sebelumnya"
+                  className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center border border-[#DCE4DE] rounded-lg text-[#0F2419] hover:bg-[#F2F6F3] transition-colors cursor-pointer"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLightboxIndex((lightboxIndex + 1) % GALERI_KEGIATAN.length)
+                  }
+                  aria-label="Foto berikutnya"
+                  className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center border border-[#DCE4DE] rounded-lg text-[#0F2419] hover:bg-[#F2F6F3] transition-colors cursor-pointer"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
