@@ -494,6 +494,51 @@ export async function updateRegistrationStatus(
   localStorage.setItem(STORAGE_RECORDS_KEY, JSON.stringify(updated));
 }
 
+export async function deleteRegistration(noPendaftaran: string): Promise<void> {
+  const scriptUrl = getConfiguredAppsScriptUrl();
+  const creds = getSessionCredentials();
+
+  if (!verifyAdminCredentials(creds.user, creds.pass)) {
+    throw new Error('Sesi admin tidak valid.');
+  }
+
+  if (scriptUrl) {
+    const response = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({
+        action: 'deleteRegistration',
+        adminUser: creds.user,
+        adminPass: creds.pass,
+        noPendaftaran,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gagal menghapus data pendaftar (HTTP ${response.status}).`);
+    }
+
+    const json = await response.json();
+    if (!json.ok) {
+      const errMsg = String(json.error || '');
+      if (errMsg.includes('Nama calon murid, nama orang tua/wali')) {
+        throw new Error(
+          'Script Google Apps Script Anda masih menggunakan versi lama yang belum mendukung fitur hapus. Perbarui Code.gs di editor Apps Script lalu Deploy Versi Baru.'
+        );
+      }
+      throw new Error(errMsg || 'Gagal menghapus data pendaftar dari Google Spreadsheet.');
+    }
+    return;
+  }
+
+  const records = getLocalRecords();
+  const filtered = records.filter((item) => item.noPendaftaran !== noPendaftaran);
+  localStorage.setItem(STORAGE_RECORDS_KEY, JSON.stringify(filtered));
+  await deleteLocalFilesFromIdb(noPendaftaran);
+}
+
 export function triggerFileDownload(url: string, fileName: string): void {
   if (!url) return;
   if (url.startsWith('data:')) {
@@ -680,5 +725,19 @@ async function getLocalFilesFromIdb(
     });
   } catch {
     return null;
+  }
+}
+
+async function deleteLocalFilesFromIdb(noPendaftaran: string): Promise<void> {
+  try {
+    const db = await openFilesDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(noPendaftaran);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch {
+    // Abaikan jika IndexedDB tidak tersedia
   }
 }

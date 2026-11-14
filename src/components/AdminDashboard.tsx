@@ -15,11 +15,13 @@ import {
   Printer,
   RefreshCw,
   Search,
+  Trash2,
   X,
 } from 'lucide-react';
 import {
   buildWhatsAppUrl,
   clearAdminSession,
+  deleteRegistration,
   fetchAllRegistrations,
   getAdminSession,
   getConfiguredAppsScriptUrl,
@@ -69,6 +71,13 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [printApplicant, setPrintApplicant] =
     useState<AdminApplicantRecord | null>(null);
+
+  // Delete state
+  const [deleteTarget, setDeleteTarget] =
+    useState<AdminApplicantRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccessNotice, setDeleteSuccessNotice] = useState<string | null>(null);
 
   const loadRegistrations = useCallback(async () => {
     setIsLoading(true);
@@ -148,6 +157,39 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
       );
     } finally {
       setIsSavingStatus(false);
+    }
+  };
+
+  const openDeleteConfirm = (item: AdminApplicantRecord) => {
+    setDeleteTarget(item);
+    setDeleteError(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteRegistration(deleteTarget.noPendaftaran);
+      setRecords((prev) =>
+        prev.filter((row) => row.noPendaftaran !== deleteTarget.noPendaftaran)
+      );
+      if (selectedApplicant?.noPendaftaran === deleteTarget.noPendaftaran) {
+        setSelectedApplicant(null);
+      }
+      if (printApplicant?.noPendaftaran === deleteTarget.noPendaftaran) {
+        setPrintApplicant(null);
+      }
+      setDeleteSuccessNotice(
+        `Data pendaftar atas nama ${deleteTarget.namaCalonMurid} (${deleteTarget.noPendaftaran}) berhasil dihapus.`
+      );
+      setDeleteTarget(null);
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : 'Gagal menghapus data pendaftar.'
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -507,6 +549,27 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
         </div>
       </div>
 
+      {/* Delete Success Notification */}
+      {deleteSuccessNotice && (
+        <div
+          role="status"
+          className="no-print flex items-center justify-between gap-3 rounded-xl border border-[#CFE0D5] bg-[#F2F7F4] px-4 py-3 text-xs sm:text-sm text-[#0E6245]"
+        >
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{deleteSuccessNotice}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDeleteSuccessNotice(null)}
+            aria-label="Tutup pemberitahuan"
+            className="p-1 text-[#0E6245] hover:text-[#0B4F37] cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Error State */}
       {loadError && (
         <div
@@ -630,6 +693,15 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                     >
                       Verifikasi
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => openDeleteConfirm(item)}
+                      className="col-span-2 inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 py-2 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-lg active:bg-[#FEF6F6] cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>Hapus (Tidak Jadi Daftar Ulang)</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -736,6 +808,16 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                             className="px-3 py-1.5 text-xs font-semibold text-white bg-[#0E6245] rounded-md hover:bg-[#0B4F37] transition-colors cursor-pointer"
                           >
                             Verifikasi
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openDeleteConfirm(item)}
+                            title="Hapus pendaftar jika tidak jadi daftar ulang"
+                            aria-label={`Hapus data ${item.namaCalonMurid}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-md hover:bg-[#FEF6F6] transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Hapus</span>
                           </button>
                         </div>
                       </td>
@@ -986,6 +1068,14 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                       <MessageCircle className="w-3.5 h-3.5" />
                       <span>Kirim WA Wali</span>
                     </a>
+                    <button
+                      type="button"
+                      onClick={() => openDeleteConfirm(selectedApplicant)}
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus Data</span>
+                    </button>
                   </div>
 
                   <button
@@ -998,6 +1088,92 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus Pendaftar */}
+      {deleteTarget && (
+        <div
+          className="no-print fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-delete-title"
+        >
+          <div className="w-full max-w-md bg-white border border-[#DCE4DE] rounded-xl shadow-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#E6ECE7] flex items-center justify-between">
+              <h2
+                id="confirm-delete-title"
+                className="font-display text-base font-semibold text-[#0F2419]"
+              >
+                Konfirmasi Hapus Data Pendaftar
+              </h2>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeleteTarget(null)}
+                aria-label="Tutup konfirmasi hapus"
+                className="min-h-[40px] min-w-[40px] flex items-center justify-center text-[#5A6D62] hover:text-[#0F2419] rounded-lg cursor-pointer disabled:opacity-50"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-sm text-[#2D4035]">
+              <p className="leading-relaxed">
+                Apakah Anda yakin ingin menghapus data pendaftar ini (misalnya karena siswa tidak jadi daftar ulang)?
+              </p>
+
+              <div className="rounded-lg border border-[#E1E8E2] bg-[#F7FAF8] p-3.5 space-y-1 text-xs">
+                <div className="font-mono font-semibold text-[#0F2419] tabular-nums">
+                  {deleteTarget.noPendaftaran}
+                </div>
+                <div className="text-sm font-semibold text-[#0F2419]">
+                  {deleteTarget.namaCalonMurid}
+                </div>
+                <div className="text-[#4A5D52]">
+                  Wali: {deleteTarget.namaOrangTua} · Status: {deleteTarget.statusVerifikasi}
+                </div>
+              </div>
+
+              <p className="text-xs text-[#5A6D62] leading-relaxed">
+                Baris data pada Google Spreadsheet akan dihapus dan folder berkasnya di Google Drive akan dipindahkan ke Sampah (Trash).
+              </p>
+
+              {deleteError && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2 rounded-lg border border-[#F2C6C6] bg-[#FEF6F6] px-3.5 py-2.5 text-xs font-medium text-[#991B1B]"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{deleteError}</span>
+                </div>
+              )}
+
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => setDeleteTarget(null)}
+                  className="min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={handleConfirmDelete}
+                  className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 text-xs font-semibold text-white bg-[#B91C1C] rounded-lg hover:bg-[#991B1B] disabled:opacity-60 cursor-pointer"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isDeleting ? 'Menghapus...' : 'Ya, Hapus Data'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

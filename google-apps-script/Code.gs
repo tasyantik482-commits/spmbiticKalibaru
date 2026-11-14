@@ -218,6 +218,7 @@ function doGet(e) {
 /**
  * Endpoint POST:
  * - action === 'updateStatus' -> Memperbarui status & catatan panitia oleh Admin
+ * - action === 'deleteRegistration' -> Menghapus baris pendaftar (mis. batal daftar ulang) & memindahkan folder Drive ke Trash
  * - default -> Menerima pendaftaran baru beserta 3 berkas Base64 (maks 900 KB/berkas)
  */
 function doPost(e) {
@@ -269,6 +270,64 @@ function doPost(e) {
               noPendaftaran: targetNo,
               statusVerifikasi: newStatus,
               catatanPanitia: newNote
+            }
+          });
+        }
+      }
+
+      return jsonResponse_({ ok: false, error: 'Nomor pendaftaran tidak ditemukan.' });
+    }
+
+    // Handler hapus pendaftar oleh Admin (mis. tidak jadi daftar ulang)
+    if (payload.action === 'deleteRegistration') {
+      if (!isValidAdmin_(payload.adminUser, payload.adminPass)) {
+        return jsonResponse_({
+          ok: false,
+          error: 'Akses ditolak. Username atau password admin tidak valid.'
+        });
+      }
+
+      const targetNo = String(payload.noPendaftaran || '').trim().toUpperCase();
+      if (!targetNo) {
+        return jsonResponse_({
+          ok: false,
+          error: 'Nomor pendaftaran wajib diisi.'
+        });
+      }
+
+      const sheet = getOrCreateSheet_();
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) {
+        return jsonResponse_({ ok: false, error: 'Data pendaftar tidak ditemukan.' });
+      }
+
+      const rows = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
+      for (let i = 0; i < rows.length; i++) {
+        if (String(rows[i][0] || '').trim().toUpperCase() === targetNo) {
+          const rowIndex = i + 2;
+          const folderUrl = String(rows[i][19] || '');
+          let folderTrashed = false;
+
+          if (folderUrl) {
+            const folderMatch =
+              folderUrl.match(/\/folders\/([a-zA-Z0-9_-]+)/) ||
+              folderUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (folderMatch && folderMatch[1]) {
+              try {
+                DriveApp.getFolderById(folderMatch[1]).setTrashed(true);
+                folderTrashed = true;
+              } catch (trashErr) {
+                // Tetap lanjut menghapus baris Spreadsheet meski folder Drive sudah terhapus atau dibatasi
+              }
+            }
+          }
+
+          sheet.deleteRow(rowIndex);
+          return jsonResponse_({
+            ok: true,
+            data: {
+              noPendaftaran: targetNo,
+              folderTrashed: folderTrashed
             }
           });
         }
