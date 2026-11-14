@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import heroCampusImg from './assets/images/hero_itic_school_campus_1794616635107.jpg';
+import schoolLogoImg from './assets/images/logo_sdit_ic_kalibaru.png';
 import kegiatanSholatDhuhaImg from './assets/images/gallery/kegiatan_sholat_dhuha.jpg';
 import kegiatanKreasiSiswaImg from './assets/images/gallery/kegiatan_kreasi_siswa.jpg';
 import kegiatanProyekP5Img from './assets/images/gallery/kegiatan_proyek_p5.jpg';
@@ -151,6 +152,7 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
 
   const [heroImgError, setHeroImgError] = useState(false);
+  const [logoImgError, setLogoImgError] = useState(false);
   const [brokenGalleryIds, setBrokenGalleryIds] = useState<Record<string, boolean>>({});
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -217,13 +219,24 @@ export default function App() {
       {/* Top Bar Contract: 3 zones separated by clean responsive gap */}
       <header className="no-print sticky top-0 z-40 bg-[#F7F9F7]/95 backdrop-blur-sm border-b border-[#E1E8E2]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 lg:gap-8">
-          {/* Zone 1: Single-line brand wordmark */}
+          {/* Zone 1: Single-line brand wordmark with official school emblem */}
           <button
             type="button"
             onClick={() => navigateToSection('beranda')}
-            className="font-display text-base sm:text-lg font-bold tracking-tight text-[#0F2419] whitespace-nowrap shrink-0 cursor-pointer min-h-[44px] flex items-center"
+            className="font-display text-base sm:text-lg font-bold tracking-tight text-[#0F2419] whitespace-nowrap shrink-0 cursor-pointer min-h-[44px] inline-flex items-center gap-2.5"
           >
-            SDIT Insan Cendekia
+            {!logoImgError ? (
+              <img
+                src={schoolLogoImg}
+                alt="Logo SDIT Insan Cendekia Kalibaru"
+                referrerPolicy="no-referrer"
+                onError={() => setLogoImgError(true)}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-contain shrink-0 bg-white"
+              />
+            ) : (
+              <School className="w-6 h-6 text-[#0E6245] shrink-0" />
+            )}
+            <span>SDIT Insan Cendekia</span>
           </button>
 
           {/* Zone 2: 5 concise single-line text nav links */}
@@ -744,19 +757,30 @@ export default function App() {
       {/* Quiet Footer */}
       <footer className="no-print border-t border-[#DCE4DE] bg-white">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-10 flex flex-col md:flex-row md:items-start md:justify-between gap-8 text-sm text-[#4A5D52]">
-          <div className="space-y-2 max-w-md">
-            <div className="font-display text-base font-semibold text-[#0F2419]">
-              SD Islam Terpadu Insan Cendekia Kalibaru
-            </div>
-            <p className="text-xs sm:text-sm leading-relaxed">
-              Jl. Pahlawan RT 001 / RW 006, Desa Kalibaru Kulon, Kec. Kalibaru, Kab. Banyuwangi, Jawa Timur 68467
-            </p>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#5A6D62]">
-              <span>Yayasan Bina Insan Mulia Kalibaru</span>
-              <span aria-hidden="true">·</span>
-              <span className="font-mono tabular-nums">NPSN 20573193</span>
-              <span aria-hidden="true">·</span>
-              <span>Akreditasi A</span>
+          <div className="flex items-start gap-3.5 max-w-md">
+            {!logoImgError && (
+              <img
+                src={schoolLogoImg}
+                alt="Logo SDIT Insan Cendekia Kalibaru"
+                referrerPolicy="no-referrer"
+                onError={() => setLogoImgError(true)}
+                className="w-11 h-11 rounded-full object-contain shrink-0 bg-white border border-[#DCE4DE]"
+              />
+            )}
+            <div className="space-y-2">
+              <div className="font-display text-base font-semibold text-[#0F2419]">
+                SD Islam Terpadu Insan Cendekia Kalibaru
+              </div>
+              <p className="text-xs sm:text-sm leading-relaxed">
+                Jl. Pahlawan RT 001 / RW 006, Desa Kalibaru Kulon, Kec. Kalibaru, Kab. Banyuwangi, Jawa Timur 68467
+              </p>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#5A6D62]">
+                <span>Yayasan Bina Insan Mulia Kalibaru</span>
+                <span aria-hidden="true">·</span>
+                <span className="font-mono tabular-nums">NPSN 20573193</span>
+                <span aria-hidden="true">·</span>
+                <span>Akreditasi A</span>
+              </div>
             </div>
           </div>
 

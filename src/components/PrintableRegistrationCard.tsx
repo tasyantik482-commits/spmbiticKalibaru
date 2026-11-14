@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Download, Printer, X } from 'lucide-react';
 import type { AdminApplicantRecord } from '../types/spmb';
 import { toDriveThumbnailUrl, triggerFileDownload } from '../services/spmbService';
+import schoolLogoImg from '../assets/images/logo_sdit_ic_kalibaru.png';
 
 interface PrintableRegistrationCardProps {
   applicant: AdminApplicantRecord | null;
@@ -116,19 +117,27 @@ export default function PrintableRegistrationCard({
         >
           {/* Kop Sekolah */}
           <div className="border-b-2 border-[#0F2419] pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-xs font-semibold tracking-wide text-[#0E6245]">
-                YAYASAN BINA INSAN MULIA KALIBARU
+            <div className="flex items-start sm:items-center gap-3.5">
+              <img
+                src={schoolLogoImg}
+                alt="Logo SDIT Insan Cendekia Kalibaru"
+                referrerPolicy="no-referrer"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-contain shrink-0 bg-white"
+              />
+              <div className="space-y-1">
+                <div className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                  YAYASAN BINA INSAN MULIA KALIBARU
+                </div>
+                <h3 className="font-display text-lg sm:text-xl font-bold text-[#0F2419]">
+                  SD ISLAM TERPADU INSAN CENDEKIA KALIBARU
+                </h3>
+                <p className="text-xs text-[#4A5D52]">
+                  Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon, Kec. Kalibaru, Kab. Banyuwangi 68467 · NPSN 20573193 · Akreditasi A
+                </p>
+                <p className="text-xs text-[#4A5D52]">
+                  Telp: (0333) 897694 · Email: sditic08@gmail.com
+                </p>
               </div>
-              <h3 className="font-display text-xl font-bold text-[#0F2419]">
-                SD ISLAM TERPADU INSAN CENDEKIA KALIBARU
-              </h3>
-              <p className="text-xs text-[#4A5D52]">
-                Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon, Kec. Kalibaru, Kab. Banyuwangi 68467 · NPSN 20573193 · Akreditasi A
-              </p>
-              <p className="text-xs text-[#4A5D52]">
-                Telp: (0333) 897694 · Email: sditic08@gmail.com
-              </p>
             </div>
             <div className="sm:text-right shrink-0">
               <div className="text-[11px] font-medium text-[#5A6D62]">
