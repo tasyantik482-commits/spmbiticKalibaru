@@ -17,10 +17,8 @@ import kegiatanProyekP5Img from './assets/images/gallery/kegiatan_proyek_p5.jpg'
 import kegiatanPresentasiKelasImg from './assets/images/gallery/kegiatan_presentasi_kelas.jpg';
 import kegiatanKaryaKelas4Img from './assets/images/gallery/kegiatan_karya_kelas4.jpg';
 import kegiatanKelasKebersihanImg from './assets/images/gallery/kegiatan_kelas_kebersihan.jpg';
-import appsScriptCode from '../google-apps-script/Code.gs?raw';
 import RegistrationForm from './components/RegistrationForm';
 import StatusCheckPanel from './components/StatusCheckPanel';
-import AppsScriptModal from './components/AppsScriptModal';
 import AdminDashboard from './components/AdminDashboard';
 
 type PortalTab = 'daftar' | 'status';
@@ -149,7 +147,6 @@ export default function App() {
   const [prefillRegNo, setPrefillRegNo] = useState('');
   const [prefillPhone, setPrefillPhone] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
 
   const [heroImgError, setHeroImgError] = useState(false);
   const [logoImgError, setLogoImgError] = useState(false);
@@ -798,24 +795,9 @@ export default function App() {
                 sdit-insancendekia.com
               </a>
             </div>
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setModalOpen(true)}
-                className="text-xs font-medium text-[#4A5D52] hover:text-[#0F2419] underline underline-offset-4 cursor-pointer"
-              >
-                Pengaturan & Kode Apps Script (Admin)
-              </button>
-            </div>
           </div>
         </div>
       </footer>
-
-      <AppsScriptModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        appsScriptCode={appsScriptCode}
-      />
 
       {/* Lightbox Foto Kegiatan Siswa */}
       {activeLightboxItem && lightboxIndex !== null && (

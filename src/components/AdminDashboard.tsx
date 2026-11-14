@@ -15,9 +15,11 @@ import {
   Printer,
   RefreshCw,
   Search,
+  Settings,
   Trash2,
   X,
 } from 'lucide-react';
+import appsScriptCode from '../../google-apps-script/Code.gs?raw';
 import {
   buildWhatsAppUrl,
   clearAdminSession,
@@ -36,6 +38,7 @@ import {
   type AdminApplicantRecord,
 } from '../types/spmb';
 import PrintableRegistrationCard from './PrintableRegistrationCard';
+import AppsScriptModal from './AppsScriptModal';
 
 interface AdminDashboardProps {
   onBackToPortal: () => void;
@@ -78,6 +81,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteSuccessNotice, setDeleteSuccessNotice] = useState<string | null>(null);
+  const [appsScriptModalOpen, setAppsScriptModalOpen] = useState(false);
 
   const loadRegistrations = useCallback(async () => {
     setIsLoading(true);
@@ -473,6 +477,14 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
           </button>
           <button
             type="button"
+            onClick={() => setAppsScriptModalOpen(true)}
+            className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg hover:bg-[#E4EFE8] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>Pengaturan & Kode Apps Script</span>
+          </button>
+          <button
+            type="button"
             onClick={handleLogout}
             className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#991B1B] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
@@ -484,9 +496,18 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
 
       {/* Info Sumber Data */}
       {dataSource === 'local_preview' && (
-        <div className="no-print rounded-lg border border-[#E5D5B5] bg-[#FDF9F0] px-4 py-3 text-xs text-[#7C4A10]">
-          Menampilkan data dari penyimpanan pratinjau lokal browser. Hubungkan URL Web App Apps Script untuk menyinkronkan data langsung dengan Google Spreadsheet{' '}
-          <span className="font-mono">{SPREADSHEET_ID}</span>.
+        <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-[#E5D5B5] bg-[#FDF9F0] px-4 py-3 text-xs text-[#7C4A10]">
+          <span>
+            Menampilkan data dari penyimpanan pratinjau lokal browser. Hubungkan URL Web App Apps Script untuk menyinkronkan data langsung dengan Google Spreadsheet{' '}
+            <span className="font-mono">{SPREADSHEET_ID}</span>.
+          </span>
+          <button
+            type="button"
+            onClick={() => setAppsScriptModalOpen(true)}
+            className="text-left sm:text-right font-semibold underline underline-offset-2 text-[#0E6245] whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Buka Pengaturan Apps Script
+          </button>
         </div>
       )}
 
@@ -1183,6 +1204,22 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
       <PrintableRegistrationCard
         applicant={printApplicant}
         onClose={() => setPrintApplicant(null)}
+      />
+
+      {/* Modal Pengaturan & Kode Apps Script (Khusus Admin) */}
+      <AppsScriptModal
+        isOpen={appsScriptModalOpen}
+        onClose={() => {
+          setAppsScriptModalOpen(false);
+          const hasRemoteUrl = Boolean(getConfiguredAppsScriptUrl());
+          if (
+            (hasRemoteUrl && dataSource === 'local_preview') ||
+            (!hasRemoteUrl && dataSource === 'apps_script')
+          ) {
+            loadRegistrations();
+          }
+        }}
+        appsScriptCode={appsScriptCode}
       />
     </section>
   );
