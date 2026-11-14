@@ -11,18 +11,21 @@ import {
   Loader2,
   Lock,
   LogOut,
+  MessageCircle,
   Printer,
   RefreshCw,
   Search,
   X,
 } from 'lucide-react';
 import {
+  buildWhatsAppUrl,
   clearAdminSession,
   fetchAllRegistrations,
   getAdminSession,
   getConfiguredAppsScriptUrl,
   saveAdminSession,
   SPREADSHEET_ID,
+  toDriveThumbnailUrl,
   triggerFileDownload,
   updateRegistrationStatus,
 } from '../services/spmbService';
@@ -271,6 +274,25 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
     });
   };
 
+  const getParentWaHref = (
+    item: AdminApplicantRecord,
+    statusOverride?: string,
+    noteOverride?: string
+  ) => {
+    const statusText = statusOverride || item.statusVerifikasi || 'Menunggu Verifikasi';
+    const noteText = (noteOverride ?? item.catatanPanitia ?? '').trim();
+    const lines = [
+      `Assalamu'alaikum Bapak/Ibu ${item.namaOrangTua},`,
+      `Kami dari Panitia SPMB SDIT Insan Cendekia Kalibaru menyampaikan informasi pendaftaran atas nama *${item.namaCalonMurid}* (No. Pendaftaran: *${item.noPendaftaran}*).`,
+      `Status saat ini: *${statusText}*`,
+    ];
+    if (noteText) {
+      lines.push(`Catatan Panitia: ${noteText}`);
+    }
+    lines.push('Terima kasih.');
+    return buildWhatsAppUrl(item.noTelepon, lines.join('\n\n'));
+  };
+
   // Tampilan Login Admin
   if (!session) {
     return (
@@ -393,7 +415,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
             type="button"
             onClick={loadRegistrations}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span>Muat Ulang</span>
@@ -402,7 +424,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
             type="button"
             onClick={handleExportCsv}
             disabled={filteredRecords.length === 0}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Unduh CSV</span>
@@ -410,7 +432,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
           <button
             type="button"
             onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#991B1B] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#991B1B] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Keluar</span>
@@ -591,12 +613,22 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                       <span>Cetak Bukti</span>
                     </button>
 
+                    <a
+                      href={getParentWaHref(item)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 py-2 text-xs font-semibold text-[#0E6245] bg-white border border-[#CFE0D5] rounded-lg active:bg-[#F2F7F4]"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Chat WA Wali</span>
+                    </a>
+
                     <button
                       type="button"
                       onClick={() => openDetailModal(item)}
-                      className="col-span-2 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg active:bg-[#0B4F37] cursor-pointer"
+                      className="inline-flex items-center justify-center min-h-[42px] px-3 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg active:bg-[#0B4F37] cursor-pointer"
                     >
-                      Lihat Detail & Verifikasi
+                      Verifikasi
                     </button>
                   </div>
                 </div>
@@ -680,6 +712,16 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
 
                       <td className="py-3.5 px-4 align-top text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-2">
+                          <a
+                            href={getParentWaHref(item)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Kirim pesan WhatsApp ke orang tua/wali"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#0E6245] bg-white border border-[#CFE0D5] rounded-md hover:bg-[#F2F7F4] transition-colors"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>WA</span>
+                          </a>
                           <button
                             type="button"
                             onClick={() => setPrintApplicant(item)}
@@ -784,119 +826,96 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                 </div>
               </dl>
 
-              {/* Berkas Unggahan & Download */}
+              {/* Berkas Unggahan, Pratinjau & Download */}
               <div className="space-y-3 pb-5 border-b border-[#E6ECE7]">
                 <div className="text-xs font-semibold text-[#0F2419]">
                   Berkas Lampiran Pendaftar
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-lg border border-[#DCE4DE] bg-[#F7FAF8] space-y-2">
-                    <div className="text-xs font-medium text-[#0F2419]">Kartu Keluarga</div>
-                    {selectedApplicant.downloadKartuKeluarga ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            triggerFileDownload(
-                              selectedApplicant.downloadKartuKeluarga || '',
-                              selectedApplicant.kkFileName ||
-                                `${selectedApplicant.noPendaftaran}_KK`
-                            )
-                          }
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-[#0E6245] hover:underline cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Download KK</span>
-                        </button>
-                        {selectedApplicant.urlKartuKeluarga &&
-                          !selectedApplicant.urlKartuKeluarga.startsWith('data:') && (
-                            <a
-                              href={selectedApplicant.urlKartuKeluarga}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-[#4A5D52] hover:underline"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              <span>Lihat</span>
-                            </a>
+                  {[
+                    {
+                      label: 'Kartu Keluarga',
+                      downloadLabel: 'Download KK',
+                      url: selectedApplicant.urlKartuKeluarga,
+                      downloadUrl: selectedApplicant.downloadKartuKeluarga,
+                      fileName:
+                        selectedApplicant.kkFileName ||
+                        `${selectedApplicant.noPendaftaran}_KK`,
+                    },
+                    {
+                      label: 'Akta Kelahiran',
+                      downloadLabel: 'Download Akta',
+                      url: selectedApplicant.urlAktaKelahiran,
+                      downloadUrl: selectedApplicant.downloadAktaKelahiran,
+                      fileName:
+                        selectedApplicant.aktaFileName ||
+                        `${selectedApplicant.noPendaftaran}_Akta`,
+                    },
+                    {
+                      label: 'Pas Foto 4 × 6',
+                      downloadLabel: 'Download Foto',
+                      url: selectedApplicant.urlPasFoto,
+                      downloadUrl: selectedApplicant.downloadPasFoto,
+                      fileName:
+                        selectedApplicant.fotoFileName ||
+                        `${selectedApplicant.noPendaftaran}_Foto`,
+                    },
+                  ].map((doc) => {
+                    const thumbSrc = toDriveThumbnailUrl(doc.url);
+                    return (
+                      <div
+                        key={doc.label}
+                        className="p-3 rounded-lg border border-[#DCE4DE] bg-[#F7FAF8] space-y-2.5 flex flex-col justify-between"
+                      >
+                        <div className="space-y-2">
+                          <div className="text-xs font-semibold text-[#0F2419]">
+                            {doc.label}
+                          </div>
+                          {thumbSrc && (
+                            <div className="aspect-[4/3] rounded-md overflow-hidden border border-[#DCE4DE] bg-white">
+                              <img
+                                src={thumbSrc}
+                                alt={`Pratinjau ${doc.label}`}
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  (e.currentTarget.parentElement as HTMLElement).style.display =
+                                    'none';
+                                }}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
                           )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-[#7E8F84]">Tidak tersedia</span>
-                    )}
-                  </div>
-
-                  <div className="p-3 rounded-lg border border-[#DCE4DE] bg-[#F7FAF8] space-y-2">
-                    <div className="text-xs font-medium text-[#0F2419]">Akta Kelahiran</div>
-                    {selectedApplicant.downloadAktaKelahiran ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            triggerFileDownload(
-                              selectedApplicant.downloadAktaKelahiran || '',
-                              selectedApplicant.aktaFileName ||
-                                `${selectedApplicant.noPendaftaran}_Akta`
-                            )
-                          }
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-[#0E6245] hover:underline cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Download</span>
-                        </button>
-                        {selectedApplicant.urlAktaKelahiran &&
-                          !selectedApplicant.urlAktaKelahiran.startsWith('data:') && (
-                            <a
-                              href={selectedApplicant.urlAktaKelahiran}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-[#4A5D52] hover:underline"
+                        </div>
+                        {doc.downloadUrl ? (
+                          <div className="flex flex-wrap items-center gap-3 pt-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                triggerFileDownload(doc.downloadUrl || '', doc.fileName)
+                              }
+                              className="inline-flex items-center gap-1 min-h-[36px] text-xs font-semibold text-[#0E6245] hover:underline cursor-pointer"
                             >
-                              <ExternalLink className="w-3 h-3" />
-                              <span>Lihat</span>
-                            </a>
-                          )}
+                              <Download className="w-3.5 h-3.5" />
+                              <span>{doc.downloadLabel}</span>
+                            </button>
+                            {doc.url && !doc.url.startsWith('data:') && (
+                              <a
+                                href={doc.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 min-h-[36px] text-xs text-[#4A5D52] hover:underline"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                <span>Lihat</span>
+                              </a>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#7E8F84]">Tidak tersedia</span>
+                        )}
                       </div>
-                    ) : (
-                      <span className="text-xs text-[#7E8F84]">Tidak tersedia</span>
-                    )}
-                  </div>
-
-                  <div className="p-3 rounded-lg border border-[#DCE4DE] bg-[#F7FAF8] space-y-2">
-                    <div className="text-xs font-medium text-[#0F2419]">Pas Foto 4 × 6</div>
-                    {selectedApplicant.downloadPasFoto ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            triggerFileDownload(
-                              selectedApplicant.downloadPasFoto || '',
-                              selectedApplicant.fotoFileName ||
-                                `${selectedApplicant.noPendaftaran}_Foto`
-                            )
-                          }
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-[#0E6245] hover:underline cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Download</span>
-                        </button>
-                        {selectedApplicant.urlPasFoto &&
-                          !selectedApplicant.urlPasFoto.startsWith('data:') && (
-                            <a
-                              href={selectedApplicant.urlPasFoto}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-[#4A5D52] hover:underline"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              <span>Lihat</span>
-                            </a>
-                          )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-[#7E8F84]">Tidak tersedia</span>
-                    )}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -946,17 +965,28 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPrintApplicant(selectedApplicant);
-                    }}
-                    className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] cursor-pointer"
-                  >
-                    <Printer className="w-3.5 h-3.5" />
-                    <span>Cetak Bukti / Daftar Ulang</span>
-                  </button>
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-2.5 pt-2">
+                  <div className="flex flex-col sm:flex-row gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPrintApplicant(selectedApplicant);
+                      }}
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] cursor-pointer"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Cetak Bukti</span>
+                    </button>
+                    <a
+                      href={getParentWaHref(selectedApplicant, editStatus, editNote)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg hover:bg-[#E4EFE8]"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Kirim WA Wali</span>
+                    </a>
+                  </div>
 
                   <button
                     type="submit"

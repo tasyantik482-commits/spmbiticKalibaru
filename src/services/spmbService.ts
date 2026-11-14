@@ -109,31 +109,152 @@ export function normalizePhone(raw: string): string {
   return digits;
 }
 
+export function buildWhatsAppUrl(phone: string, message?: string): string {
+  let digits = String(phone || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('0')) {
+    digits = '62' + digits.slice(1);
+  } else if (!digits.startsWith('62')) {
+    digits = '62' + digits;
+  }
+  const base = `https://wa.me/${digits}`;
+  return message ? `${base}?text=${encodeURIComponent(message)}` : base;
+}
+
 export function formatBytesToKb(bytes: number): string {
   return `${Math.round((bytes / 1024) * 10) / 10} KB`;
+}
+
+export function extractDriveFileId(url?: string): string {
+  if (!url) return '';
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return match && match[1] ? match[1] : '';
 }
 
 export function toDriveDownloadUrl(url?: string): string {
   if (!url) return '';
   if (url.startsWith('data:')) return url;
-  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) {
-    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  const id = extractDriveFileId(url);
+  if (id) {
+    return `https://drive.google.com/uc?export=download&id=${id}`;
   }
   return url;
 }
 
-export function readFileAsPayload(file: File): Promise<UploadedFilePayload> {
-  return new Promise((resolve, reject) => {
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      reject(
-        new Error(
-          `Ukuran "${file.name}" (${formatBytesToKb(file.size)}) melebihi batas maksimal 900 KB.`
-        )
-      );
-      return;
-    }
+export function toDriveThumbnailUrl(url?: string): string {
+  if (!url) return '';
+  if (url.startsWith('data:image/')) return url;
+  const id = extractDriveFileId(url);
+  if (id) {
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w600`;
+  }
+  return '';
+}
 
+function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error(`Gagal memproses gambar "${file.name}".`));
+    };
+    img.src = objectUrl;
+  });
+}
+
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  mimeType: string,
+  quality: number
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Gagal mengompresi gambar.'));
+          return;
+        }
+        resolve(blob);
+      },
+      mimeType,
+      quality
+    );
+  });
+}
+
+async function compressImageUnderLimit(file: File): Promise<File> {
+  const img = await loadImageFromFile(file);
+  const maxDimensions = [1800, 1400, 1100, 900];
+  const qualities = [0.85, 0.72, 0.6, 0.48];
+
+  for (const maxDim of maxDimensions) {
+    const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+    const width = Math.max(1, Math.round(img.naturalWidth * scale));
+    const height = Math.max(1, Math.round(img.naturalHeight * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) break;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+
+    for (const q of qualities) {
+      const blob = await canvasToBlob(canvas, 'image/jpeg', q);
+      if (blob.size <= MAX_FILE_SIZE_BYTES) {
+        const baseName = file.name.replace(/\.[^.]+$/, '') || 'berkas';
+        return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+      }
+    }
+  }
+
+  throw new Error(
+    `Ukuran "${file.name}" masih di atas 900 KB setelah kompresi. Mohon pilih foto dengan resolusi lebih kecil.`
+  );
+}
+
+export interface PreparedFileResult {
+  payload: UploadedFilePayload;
+  wasCompressed: boolean;
+  originalSizeBytes: number;
+}
+
+export async function readFileAsPayloadWithInfo(
+  file: File
+): Promise<PreparedFileResult> {
+  const originalSizeBytes = file.size;
+  let targetFile = file;
+  let wasCompressed = false;
+
+  const isCompressibleImage =
+    file.type === 'image/jpeg' ||
+    file.type === 'image/png' ||
+    file.type === 'image/webp';
+
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    if (isCompressibleImage) {
+      targetFile = await compressImageUnderLimit(file);
+      wasCompressed = true;
+    } else {
+      throw new Error(
+        `Ukuran PDF "${file.name}" (${formatBytesToKb(file.size)}) melebihi batas maksimal 900 KB. Kompres PDF terlebih dahulu atau unggah dalam format foto JPG/PNG.`
+      );
+    }
+  }
+
+  const payload = await readFileDirect(targetFile);
+  return { payload, wasCompressed, originalSizeBytes };
+}
+
+function readFileDirect(file: File): Promise<UploadedFilePayload> {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
       const result = typeof reader.result === 'string' ? reader.result : '';
@@ -153,6 +274,11 @@ export function readFileAsPayload(file: File): Promise<UploadedFilePayload> {
     reader.onerror = () => reject(new Error(`Gagal membaca berkas "${file.name}".`));
     reader.readAsDataURL(file);
   });
+}
+
+export async function readFileAsPayload(file: File): Promise<UploadedFilePayload> {
+  const res = await readFileAsPayloadWithInfo(file);
+  return res.payload;
 }
 
 export async function pingAppsScript(url: string): Promise<{

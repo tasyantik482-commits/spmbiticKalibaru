@@ -453,7 +453,7 @@ export default function App() {
                   Alur & Persyaratan Berkas SPMB
                 </h2>
                 <p className="mt-1 text-sm text-[#4A5D52]">
-                  Siapkan tiga berkas digital dalam ukuran maksimal 900 KB per file sebelum mengisi formulir.
+                  Siapkan tiga berkas digital. Foto dari kamera HP otomatis disesuaikan agar di bawah 900 KB per berkas.
                 </p>
               </div>
               <div className="inline-flex items-center gap-2 text-xs font-medium text-[#0E6245] shrink-0">
@@ -476,6 +476,20 @@ export default function App() {
                   </p>
                 </div>
               ))}
+            </div>
+
+            <div className="pt-4 border-t border-[#E6ECE7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#4A5D52]">
+              <span>Butuh bantuan saat pengisian formulir atau pengunggahan berkas?</span>
+              <span className="font-medium text-[#0F2419]">
+                Hubungi Sekolah:{' '}
+                <a href="tel:0333897694" className="font-mono text-[#0E6245] hover:underline tabular-nums">
+                  (0333) 897694
+                </a>
+                <span aria-hidden="true"> · </span>
+                <a href="mailto:sditic08@gmail.com" className="text-[#0E6245] hover:underline">
+                  sditic08@gmail.com
+                </a>
+              </span>
             </div>
           </div>
         </section>

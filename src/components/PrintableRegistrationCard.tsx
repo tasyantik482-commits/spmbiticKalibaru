@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Download, Printer, X } from 'lucide-react';
 import type { AdminApplicantRecord } from '../types/spmb';
-import { triggerFileDownload } from '../services/spmbService';
+import { toDriveThumbnailUrl, triggerFileDownload } from '../services/spmbService';
 
 interface PrintableRegistrationCardProps {
   applicant: AdminApplicantRecord | null;
@@ -12,7 +12,10 @@ export default function PrintableRegistrationCard({
   applicant,
   onClose,
 }: PrintableRegistrationCardProps) {
+  const [photoError, setPhotoError] = useState(false);
+
   useEffect(() => {
+    setPhotoError(false);
     if (!applicant) return;
     document.body.classList.add('printing-receipt');
     return () => {
@@ -37,8 +40,8 @@ export default function PrintableRegistrationCard({
     window.print();
   };
 
-  const isLocalImagePhoto =
-    applicant.urlPasFoto && applicant.urlPasFoto.startsWith('data:image/');
+  const photoPreviewSrc = toDriveThumbnailUrl(applicant.urlPasFoto);
+  const canShowPhoto = Boolean(photoPreviewSrc) && !photoError;
 
   return (
     <div
@@ -217,10 +220,12 @@ export default function PrintableRegistrationCard({
 
             <div className="sm:col-span-3 flex flex-col items-center">
               <div className="w-[104px] h-[138px] border border-[#9EB0A3] rounded bg-[#F7FAF8] flex items-center justify-center overflow-hidden">
-                {isLocalImagePhoto ? (
+                {canShowPhoto ? (
                   <img
-                    src={applicant.urlPasFoto}
+                    src={photoPreviewSrc}
                     alt={`Pas Foto ${applicant.namaCalonMurid}`}
+                    referrerPolicy="no-referrer"
+                    onError={() => setPhotoError(true)}
                     className="w-full h-full object-cover"
                   />
                 ) : (

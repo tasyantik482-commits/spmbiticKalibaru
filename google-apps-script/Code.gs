@@ -15,6 +15,7 @@
 const SPREADSHEET_ID = '1b9aQUoVH1PSunV63VvaoMUt2S38DlSgYgc--CpqAhsw';
 const SHEET_NAME = 'Pendaftar_SPMB';
 const DRIVE_FOLDER_NAME = 'Berkas_SPMB_SDIT_IC_Kalibaru';
+const DRIVE_FOLDER_ID = ''; // Opsional: isi ID folder Drive jika ingin mengarahkan ke folder tertentu
 const REG_PREFIX = 'SPMB-IC-2026-';
 const MAX_FILE_BYTES = 900 * 1024; // 900 KB
 
@@ -73,9 +74,20 @@ function doGet(e) {
       const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
       const sheet = getOrCreateSheet_();
       const totalPendaftar = Math.max(0, sheet.getLastRow() - 1);
+      let driveOk = true;
+      let driveNote = 'Akses Google Drive aktif.';
+      try {
+        getOrCreateRootFolder_();
+      } catch (driveErr) {
+        driveOk = false;
+        driveNote = 'Akses DriveApp bermasalah: ' + driveErr.message;
+      }
       return jsonResponse_({
-        ok: true,
-        message: 'Koneksi Apps Script & Spreadsheet aktif.',
+        ok: driveOk,
+        message: driveOk
+          ? 'Koneksi Apps Script, Spreadsheet, dan Google Drive aktif.'
+          : driveNote,
+        error: driveOk ? '' : driveNote,
         spreadsheetTitle: ss.getName(),
         spreadsheetId: SPREADSHEET_ID,
         totalPendaftar: totalPendaftar
@@ -367,9 +379,17 @@ function doPost(e) {
       }
     });
   } catch (err) {
+    const msg = String(err && err.message ? err.message : err);
+    if (msg.indexOf('DriveApp') !== -1 || msg.indexOf('Access denied') !== -1) {
+      return jsonResponse_({
+        ok: false,
+        error:
+          'Izin Google Drive (DriveApp) ditolak oleh Apps Script. Solusi: (1) Jalankan fungsi setupSpreadsheet di editor Apps Script lalu klik Allow; (2) Pada Deploy > Kelola deployment, pastikan "Jalankan sebagai: Saya (Me)" dan terapkan Versi Baru; (3) Jika menggunakan akun belajar.id/Workspace yang membatasi DriveApp, buat deployment Apps Script menggunakan akun Gmail biasa (misal sditic08@gmail.com) yang diberi akses Editor ke Spreadsheet.'
+      });
+    }
     return jsonResponse_({
       ok: false,
-      error: 'Gagal memproses permintaan: ' + err.message
+      error: 'Gagal memproses permintaan: ' + msg
     });
   } finally {
     try {
@@ -415,6 +435,9 @@ function getOrCreateSheet_() {
 }
 
 function getOrCreateRootFolder_() {
+  if (DRIVE_FOLDER_ID) {
+    return DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  }
   const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
   if (folders.hasNext()) {
     return folders.next();
@@ -459,7 +482,11 @@ function saveBase64ToDrive_(folder, fileObj, baseFileName) {
   const ext = getExtensionFromMime_(fileObj.mimeType, fileObj.fileName);
   const blob = Utilities.newBlob(bytes, fileObj.mimeType, baseFileName + ext);
   const createdFile = folder.createFile(blob);
-  createdFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  try {
+    createdFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (shareErr) {
+    // Tetap lanjutkan jika kebijakan domain Workspace membatasi berbagi tautan publik
+  }
   return createdFile.getUrl();
 }
 

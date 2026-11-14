@@ -60,3 +60,15 @@ Panitia cukup membuka tab `Pendaftar_SPMB` di Google Spreadsheet:
 - Ubah kolom **Status Verifikasi** (misal: `Menunggu Verifikasi`, `Berkas Lengkap`, `Jadwal Observasi`, `Diterima`, atau `Perlu Perbaikan`).
 - Isi kolom **Catatan Panitia** (misal jadwal observasi atau catatan berkas).
 - Orang tua/wali yang mengecek melalui menu **Cek Status** di website akan langsung melihat pembaruan tersebut secara real-time.
+
+---
+
+## 5. Mengatasi Error `Access denied: DriveApp`
+
+Jika muncul pesan `Access denied: DriveApp` saat mengirim formulir:
+1. **Pastikan sudah menjalankan `setupSpreadsheet` di editor Apps Script** dan menekan **Allow / Izinkan** untuk izin Google Drive & Spreadsheet (setiap kali kode `Code.gs` diubah, simpan lalu buat **Versi Baru** di **Terapkan > Kelola deployment > Edit (ikon pensil) > Versi: Versi baru**).
+2. **Periksa setelan "Jalankan sebagai" (`Execute as`)**: wajib dipilih **Saya (`Me`)**, bukan *Pengguna yang mengakses aplikasi web*.
+3. **Jika memakai akun Google Workspace / `@*.belajar.id`**: beberapa domain `belajar.id` membatasi akses `DriveApp` atau berbagi tautan publik dari Web App eksternal. Solusinya:
+   - Bagikan Spreadsheet ke akun Gmail sekolah biasa (misal `sditic08@gmail.com`) dengan akses **Editor**, lalu
+   - Buka Spreadsheet menggunakan akun Gmail tersebut, tempel `Code.gs`, jalankan `setupSpreadsheet`, dan **Deploy** Web App dari akun Gmail tersebut (lalu perbarui `VITE_APPS_SCRIPT_URL` di Vercel).
+
