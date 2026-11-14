@@ -134,10 +134,10 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => navigateToSection('program')}
+              onClick={() => navigateToSection('visi-misi')}
               className="hover:text-[#0F2419] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 cursor-pointer py-2"
             >
-              Program
+              Visi &amp; Misi
             </button>
             <button
               type="button"
@@ -195,10 +195,10 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => navigateToSection('program')}
+              onClick={() => navigateToSection('visi-misi')}
               className="flex items-center w-full text-left min-h-[44px] px-2 text-sm font-medium text-[#1D3126] rounded-lg active:bg-[#F2F6F3]"
             >
-              Program
+              Visi &amp; Misi
             </button>
             <button
               type="button"
@@ -240,8 +240,8 @@ export default function App() {
         ) : (
           <>
         {/* Hero Section */}
-        <section id="beranda" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-10 sm:pb-12">
-          <div className="relative overflow-hidden rounded-2xl border border-[#D7E0D9] bg-[#10291D] min-h-[420px] sm:min-h-[470px] lg:min-h-[540px] flex items-end">
+        <section id="beranda" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-8 sm:pb-10">
+          <div className="relative overflow-hidden rounded-2xl border border-[#D7E0D9] bg-[#10291D] min-h-[430px] sm:min-h-[480px] lg:min-h-[540px] flex items-end">
             {!heroImgError ? (
               <img
                 src={heroCampusImg}
@@ -259,7 +259,7 @@ export default function App() {
             {/* Measured contrast scrim */}
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-t from-[#081A12]/92 via-[#0A2016]/75 to-[#0A2016]/30 lg:bg-gradient-to-r lg:from-[#081A12]/92 lg:via-[#0A2016]/70 lg:to-transparent"
+              className="absolute inset-0 bg-gradient-to-t from-[#081A12]/92 via-[#0A2016]/78 to-[#0A2016]/35 lg:bg-gradient-to-r lg:from-[#081A12]/92 lg:via-[#0A2016]/72 lg:to-transparent"
             />
 
             <div className="relative z-10 w-full p-5 sm:p-10 lg:p-14 max-w-3xl space-y-4 sm:space-y-5">
@@ -275,14 +275,13 @@ export default function App() {
 
               <h1
                 className="font-display font-bold tracking-tight text-white leading-[1.15]"
-                style={{ fontSize: 'clamp(1.75rem, 4vw, 3.5rem)', textWrap: 'balance' }}
+                style={{ fontSize: 'clamp(1.75rem, 4vw, 3.35rem)', textWrap: 'balance' }}
               >
                 Penerimaan Murid Baru Tahun Ajaran 2026/2027
               </h1>
 
-              <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-xl">
-                Daftarkan putra-putri Anda secara daring di sekolah dasar Islam terpadu berbasis{' '}
-                <em>Green School</em> dan pembinaan karakter Qur’ani di Kalibaru Kulon. Nomor pendaftaran diterbitkan otomatis setelah formulir terkirim.
+              <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-2xl">
+                Bersama mewujudkan generasi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong> — membekali ananda taat beribadah, berakhlak mulia, dan cinta Al-Qur’an melalui pembelajaran yang menyenangkan serta prestatif (IQ &amp; EQ), dan pembiasaan hidup bersih serta disiplin (AQ).
               </p>
 
               <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
@@ -305,8 +304,60 @@ export default function App() {
           </div>
         </section>
 
+        {/* Visi & Misi SDIT Insan Cendekia */}
+        <section id="visi-misi" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pb-12">
+          <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            <div className="lg:col-span-5 space-y-3">
+              <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                Visi SDIT Insan Cendekia
+              </p>
+              <h2
+                className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#0F2419] leading-snug"
+                style={{ textWrap: 'balance' }}
+              >
+                “Sholih, Cerdas, Mandiri.”
+              </h2>
+              <p className="text-sm text-[#4A5D52] leading-relaxed">
+                Komitmen pendidikan terpadu di Kalibaru dalam memadukan pembinaan ruhiyah (taat beribadah dan cinta Al-Qur’an), kecerdasan intelektual serta emosional (IQ &amp; EQ), dan ketangguhan karakter disiplin (AQ).
+              </p>
+            </div>
+
+            <div className="lg:col-span-7 space-y-3">
+              <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                Misi Sekolah
+              </p>
+              <ol className="divide-y divide-[#E6ECE7] border-y border-[#E6ECE7]">
+                <li className="py-3.5 flex items-start gap-3.5">
+                  <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
+                    01.
+                  </span>
+                  <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
+                    Membekali peserta didik taat beribadah, berakhlak mulia, dan cinta Al-Qur’an.
+                  </span>
+                </li>
+                <li className="py-3.5 flex items-start gap-3.5">
+                  <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
+                    02.
+                  </span>
+                  <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
+                    Mengembangkan proses pembelajaran yang menyenangkan dan prestatif (IQ dan EQ).
+                  </span>
+                </li>
+                <li className="py-3.5 flex items-start gap-3.5">
+                  <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
+                    03.
+                  </span>
+                  <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
+                    Membiasakan hidup bersih dan disiplin (AQ).
+                  </span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
         {/* Profil & Program Unggulan */}
-        <section id="program" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <section id="program" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
             <div className="lg:col-span-6 flex flex-col justify-between space-y-8">
               <div className="space-y-3">
