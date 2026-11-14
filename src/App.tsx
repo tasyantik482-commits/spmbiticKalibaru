@@ -12,30 +12,24 @@ import AdminDashboard from './components/AdminDashboard';
 type PortalTab = 'daftar' | 'status';
 type ViewMode = 'portal' | 'admin';
 
-const PROGRAMS = [
+const FOKUS_PENDIDIKAN = [
   {
     number: '01.',
-    title: 'Kurikulum Terpadu & Akreditasi A',
+    title: 'Ibadah, akhlak, dan Al-Qur’an',
     description:
-      'Memadukan Kurikulum Merdeka (Dinas Pendidikan) dan standar Ke-JSIT-an untuk membangun kecakapan akademik dan kemandirian belajar sejak kelas awal.',
+      'Membekali peserta didik agar taat beribadah, berakhlak mulia, dan mencintai Al-Qur’an.',
   },
   {
     number: '02.',
-    title: 'Tahfidzul Qur’an & Bina Pribadi Islami',
+    title: 'Pembelajaran menyenangkan dan prestatif',
     description:
-      'Pembelajaran Al-Qur’an intensif, pembiasaan ibadah harian, serta pembinaan akhlaqul karimah dalam keseharian warga sekolah.',
+      'Mengembangkan proses belajar yang menyenangkan serta mendukung kecerdasan intelektual dan emosional.',
   },
   {
     number: '03.',
-    title: 'Lingkungan Green School yang Nyaman',
+    title: 'Hidup bersih dan disiplin',
     description:
-      'Kawasan belajar asri dan tertib di Kalibaru Kulon dengan pembiasaan budaya hidup sehat, rapi, serta 12 pilihan ekstrakurikuler pengembangan bakat.',
-  },
-  {
-    number: '04.',
-    title: 'Layanan Reguler & Boarding School',
-    description:
-      'Tersedia pilihan kelas reguler harian maupun program boarding school terstruktur sesuai kesiapan peserta didik dan dukungan orang tua.',
+      'Menumbuhkan kebiasaan menjaga kebersihan dan disiplin dalam kegiatan sehari-hari.',
   },
 ];
 
@@ -281,7 +275,7 @@ export default function App() {
               </h1>
 
               <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-2xl">
-                Bersama mewujudkan generasi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong> — membekali ananda taat beribadah, berakhlak mulia, dan cinta Al-Qur’an melalui pembelajaran yang menyenangkan serta prestatif (IQ &amp; EQ), dan pembiasaan hidup bersih serta disiplin (AQ).
+                Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendekia Kalibaru mendampingi peserta didik bertumbuh melalui pembinaan ibadah dan cinta Al-Qur’an, pembelajaran yang menyenangkan dan prestatif, serta pembiasaan hidup bersih dan disiplin.
               </p>
 
               <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
@@ -318,7 +312,7 @@ export default function App() {
                 “Sholih, Cerdas, Mandiri.”
               </h2>
               <p className="text-sm text-[#4A5D52] leading-relaxed">
-                Komitmen pendidikan terpadu di Kalibaru dalam memadukan pembinaan ruhiyah (taat beribadah dan cinta Al-Qur’an), kecerdasan intelektual serta emosional (IQ &amp; EQ), dan ketangguhan karakter disiplin (AQ).
+                Pendidikan di SDIT Insan Cendekia Kalibaru diarahkan untuk mendampingi peserta didik mengembangkan ibadah, akhlak mulia, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian dalam kehidupan sehari-hari.
               </p>
             </div>
 
@@ -356,39 +350,47 @@ export default function App() {
           </div>
         </section>
 
-        {/* Profil & Program Unggulan */}
+        {/* Tentang Sekolah & Fokus Pendidikan */}
         <section id="program" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
             <div className="lg:col-span-6 flex flex-col justify-between space-y-8">
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
-                  Profil Pendidikan Sekolah
+                  Profil Sekolah
                 </p>
                 <h2
                   className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
                   style={{ textWrap: 'balance' }}
                 >
-                  Membentuk Generasi Prestatif, Disiplin, dan Berakhlaqul Karimah
+                  Tentang SDIT Insan Cendekia Kalibaru
                 </h2>
                 <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
-                  Di bawah naungan Yayasan Bina Insan Mulia Kalibaru, SDIT Insan Cendekia memadukan kecerdasan intelektual, emosional, dan spiritual dalam lingkungan belajar yang rapi dan nyaman.
+                  SDIT Insan Cendekia Kalibaru adalah sekolah dasar Islam terpadu di Kalibaru Kulon, Kabupaten Banyuwangi, yang berada di bawah naungan Yayasan Bina Insan Mulia Kalibaru. Pendidikan di sekolah ini berlandaskan visi “Sholih, Cerdas, Mandiri” dan diarahkan untuk mendampingi peserta didik dalam mengembangkan ibadah, akhlak, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian.
+                </p>
+                <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
+                  Arah pendidikan tersebut diwujudkan melalui pembelajaran yang menyenangkan dan mendorong prestasi, disertai pembiasaan hidup bersih dan disiplin. Sekolah berupaya menghadirkan proses belajar yang membantu peserta didik tumbuh dengan nilai-nilai Islami dan bekal untuk menjalani kehidupan sehari-hari.
                 </p>
               </div>
 
-              <div className="divide-y divide-[#E1E8E2] border-y border-[#E1E8E2]">
-                {PROGRAMS.map((item) => (
-                  <div key={item.number} className="py-4 first:pt-4 last:pb-4 space-y-1">
-                    <h3 className="font-display text-base font-semibold text-[#0F2419]">
-                      <span className="font-mono text-sm text-[#0E6245] mr-2 tabular-nums">
-                        {item.number}
-                      </span>
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-[#4A5D52] leading-relaxed pl-0 sm:pl-7">
-                      {item.description}
-                    </p>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <h3 className="font-display text-lg font-semibold text-[#0F2419]">
+                  Fokus Pendidikan
+                </h3>
+                <div className="divide-y divide-[#E1E8E2] border-y border-[#E1E8E2]">
+                  {FOKUS_PENDIDIKAN.map((item) => (
+                    <div key={item.number} className="py-4 first:pt-4 last:pb-4 space-y-1">
+                      <h4 className="font-display text-base font-semibold text-[#0F2419]">
+                        <span className="font-mono text-sm text-[#0E6245] mr-2 tabular-nums">
+                          {item.number}
+                        </span>
+                        {item.title}
+                      </h4>
+                      <p className="text-sm text-[#4A5D52] leading-relaxed pl-0 sm:pl-7">
+                        {item.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -410,9 +412,9 @@ export default function App() {
                   )}
                 </div>
                 <figcaption className="px-5 py-4 text-xs sm:text-sm text-[#42554A]">
-                  <span className="font-semibold text-[#0F2419]">Pembelajaran Aktif & Pembiasaan Qur’ani</span>
+                  <span className="font-semibold text-[#0F2419]">Pembinaan Ibadah &amp; Cinta Al-Qur’an</span>
                   <span aria-hidden="true"> · </span>
-                  <span>Pendampingan intensif oleh guru penggerak dan pembina ibadah</span>
+                  <span>Pendampingan belajar yang hangat untuk menumbuhkan akhlak mulia dan kecintaan membaca Al-Qur’an</span>
                 </figcaption>
               </figure>
 
@@ -433,9 +435,9 @@ export default function App() {
                   )}
                 </div>
                 <figcaption className="px-5 py-4 text-xs sm:text-sm text-[#42554A]">
-                  <span className="font-semibold text-[#0F2419]">Lingkungan Belajar Sehat & Asri</span>
+                  <span className="font-semibold text-[#0F2419]">Lingkungan Belajar Bersih &amp; Disiplin</span>
                   <span aria-hidden="true"> · </span>
-                  <span>Ruang belajar terbuka yang mendukung karakter rapi dan cinta lingkungan</span>
+                  <span>Suasana sekolah yang asri dan nyaman untuk mendukung pembelajaran aktif serta kemandirian peserta didik</span>
                 </figcaption>
               </figure>
             </div>
