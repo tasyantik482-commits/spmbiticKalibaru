@@ -305,7 +305,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Masukkan username admin"
-                className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15"
+                className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15"
               />
             </div>
 
@@ -325,13 +325,13 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="w-full pl-3.5 pr-10 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15"
+                  className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? 'Sembunyikan password' : 'Lihat password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A6D62] hover:text-[#0F2419] cursor-pointer"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[40px] min-w-[40px] flex items-center justify-center text-[#5A6D62] hover:text-[#0F2419] cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -350,7 +350,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
 
             <button
               type="submit"
-              className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] transition-colors cursor-pointer"
+              className="w-full min-h-[46px] py-2.5 px-4 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] transition-colors cursor-pointer"
             >
               Masuk Dashboard
             </button>
@@ -456,24 +456,24 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
 
       {/* Filter & Search Toolbar */}
       <div className="no-print bg-white border border-[#DCE4DE] rounded-xl p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1 lg:max-w-md">
           <Search className="w-4 h-4 text-[#64746B] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari nomor pendaftaran, nama murid, orang tua, atau WA..."
-            className="w-full pl-10 pr-3.5 py-2 text-sm text-[#0F2419] bg-[#F7F9F7] border border-[#CCD6CE] rounded-lg placeholder:text-[#7E8F84] focus:outline-none focus:border-[#0E6245]"
+            className="w-full min-h-[44px] pl-10 pr-3.5 py-2 text-base sm:text-sm text-[#0F2419] bg-[#F7F9F7] border border-[#CCD6CE] rounded-lg placeholder:text-[#7E8F84] focus:outline-none focus:border-[#0E6245]"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-1 p-1 bg-[#EEF2EF] rounded-lg overflow-x-auto">
+        <div className="flex items-center gap-1 p-1 bg-[#EEF2EF] rounded-lg overflow-x-auto max-w-full">
           {['Semua', ...VERIFICATION_STATUS_OPTIONS].map((opt) => (
             <button
               key={opt}
               type="button"
               onClick={() => setStatusFilter(opt)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+              className={`min-h-[38px] px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                 statusFilter === opt
                   ? 'bg-white text-[#0F2419] shadow-xs'
                   : 'text-[#4A5D52] hover:text-[#0F2419]'
@@ -530,104 +530,179 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-[#E1E8E2] bg-[#F7FAF8] text-xs font-semibold text-[#4A5D52]">
-                  <th className="py-3 px-4 whitespace-nowrap">No. Pendaftaran</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Calon Murid</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Orang Tua & WA</th>
-                  <th className="py-3 px-4 whitespace-nowrap text-right">TB / BB / LK</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Berkas KK</th>
-                  <th className="py-3 px-4 whitespace-nowrap text-right">Aksi & Cetak</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E6ECE7] text-sm">
-                {filteredRecords.map((item) => (
-                  <tr
-                    key={item.noPendaftaran}
-                    className="hover:bg-[#F9FBF9] transition-colors"
-                  >
-                    <td className="py-3.5 px-4 align-top whitespace-nowrap">
+          <>
+            {/* Mobile Card List (< md) untuk kemudahan akses di HP */}
+            <div className="md:hidden divide-y divide-[#E6ECE7]">
+              {filteredRecords.map((item) => (
+                <div key={item.noPendaftaran} className="p-4 space-y-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
                       <div className="font-mono text-xs font-semibold text-[#0F2419] tabular-nums">
                         {item.noPendaftaran}
                       </div>
                       <div className="text-xs text-[#64746B] mt-0.5">
                         {formatTanggal(item.waktuDaftar)}
                       </div>
-                    </td>
+                    </div>
+                    {renderStatusCell(item.statusVerifikasi)}
+                  </div>
 
-                    <td className="py-3.5 px-4 align-top">
-                      <div className="font-semibold text-[#0F2419]">
-                        {item.namaCalonMurid}
+                  <div className="space-y-1">
+                    <div className="text-base font-semibold text-[#0F2419]">
+                      {item.namaCalonMurid}
+                    </div>
+                    <div className="text-xs text-[#4A5D52]">
+                      Wali: <span className="font-medium text-[#0F2419]">{item.namaOrangTua}</span>
+                      <span aria-hidden="true"> · </span>
+                      <span className="font-mono tabular-nums">{item.noTelepon}</span>
+                    </div>
+                    <div className="text-xs text-[#5A6D62] font-mono tabular-nums">
+                      TB {item.tinggiBadan} cm · BB {item.beratBadan} kg · LK {item.lingkarKepala} cm
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    {item.downloadKartuKeluarga ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          triggerFileDownload(
+                            item.downloadKartuKeluarga || '',
+                            item.kkFileName || `${item.noPendaftaran}_KK`
+                          )
+                        }
+                        className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 py-2 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg active:bg-[#E4EFE8] cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5 shrink-0" />
+                        <span>Download KK</span>
+                      </button>
+                    ) : (
+                      <div className="inline-flex items-center justify-center min-h-[42px] px-3 py-2 text-xs text-[#7E8F84] bg-[#F7F9F7] border border-[#E6ECE7] rounded-lg">
+                        KK Belum Ada
                       </div>
-                      <div className="text-xs text-[#5A6D62] mt-0.5">
-                        {item.asalTkPaud && item.asalTkPaud !== '-'
-                          ? item.asalTkPaud
-                          : 'Asal TK tidak diisi'}
-                      </div>
-                    </td>
+                    )}
 
-                    <td className="py-3.5 px-4 align-top">
-                      <div className="text-[#0F2419]">{item.namaOrangTua}</div>
-                      <div className="font-mono text-xs text-[#5A6D62] tabular-nums mt-0.5">
-                        {item.noTelepon}
-                      </div>
-                    </td>
+                    <button
+                      type="button"
+                      onClick={() => setPrintApplicant(item)}
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg active:bg-[#F2F6F3] cursor-pointer"
+                    >
+                      <Printer className="w-3.5 h-3.5 shrink-0" />
+                      <span>Cetak Bukti</span>
+                    </button>
 
-                    <td className="py-3.5 px-4 align-top text-right font-mono text-xs text-[#0F2419] tabular-nums whitespace-nowrap">
-                      {item.tinggiBadan}/{item.beratBadan}/{item.lingkarKepala}
-                    </td>
+                    <button
+                      type="button"
+                      onClick={() => openDetailModal(item)}
+                      className="col-span-2 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg active:bg-[#0B4F37] cursor-pointer"
+                    >
+                      Lihat Detail & Verifikasi
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                    <td className="py-3.5 px-4 align-top">
-                      {renderStatusCell(item.statusVerifikasi)}
-                    </td>
-
-                    <td className="py-3.5 px-4 align-top whitespace-nowrap">
-                      {item.downloadKartuKeluarga ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            triggerFileDownload(
-                              item.downloadKartuKeluarga || '',
-                              item.kkFileName || `${item.noPendaftaran}_KK`
-                            )
-                          }
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-md hover:bg-[#E4EFE8] transition-colors cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Download KK</span>
-                        </button>
-                      ) : (
-                        <span className="text-xs text-[#7E8F84]">Belum tersedia</span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4 align-top text-right whitespace-nowrap">
-                      <div className="inline-flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setPrintApplicant(item)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-md hover:bg-[#F2F6F3] transition-colors cursor-pointer"
-                        >
-                          <Printer className="w-3.5 h-3.5" />
-                          <span>Cetak Bukti</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openDetailModal(item)}
-                          className="px-3 py-1.5 text-xs font-semibold text-white bg-[#0E6245] rounded-md hover:bg-[#0B4F37] transition-colors cursor-pointer"
-                        >
-                          Verifikasi
-                        </button>
-                      </div>
-                    </td>
+            {/* Tablet & Desktop High-Density Table (md+) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#E1E8E2] bg-[#F7FAF8] text-xs font-semibold text-[#4A5D52]">
+                    <th className="py-3 px-4 whitespace-nowrap">No. Pendaftaran</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Calon Murid</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Orang Tua & WA</th>
+                    <th className="py-3 px-4 whitespace-nowrap text-right">TB / BB / LK</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Status</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Berkas KK</th>
+                    <th className="py-3 px-4 whitespace-nowrap text-right">Aksi & Cetak</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#E6ECE7] text-sm">
+                  {filteredRecords.map((item) => (
+                    <tr
+                      key={item.noPendaftaran}
+                      className="hover:bg-[#F9FBF9] transition-colors"
+                    >
+                      <td className="py-3.5 px-4 align-top whitespace-nowrap">
+                        <div className="font-mono text-xs font-semibold text-[#0F2419] tabular-nums">
+                          {item.noPendaftaran}
+                        </div>
+                        <div className="text-xs text-[#64746B] mt-0.5">
+                          {formatTanggal(item.waktuDaftar)}
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 align-top">
+                        <div className="font-semibold text-[#0F2419]">
+                          {item.namaCalonMurid}
+                        </div>
+                        <div className="text-xs text-[#5A6D62] mt-0.5">
+                          {item.asalTkPaud && item.asalTkPaud !== '-'
+                            ? item.asalTkPaud
+                            : 'Asal TK tidak diisi'}
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 align-top">
+                        <div className="text-[#0F2419]">{item.namaOrangTua}</div>
+                        <div className="font-mono text-xs text-[#5A6D62] tabular-nums mt-0.5">
+                          {item.noTelepon}
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 align-top text-right font-mono text-xs text-[#0F2419] tabular-nums whitespace-nowrap">
+                        {item.tinggiBadan}/{item.beratBadan}/{item.lingkarKepala}
+                      </td>
+
+                      <td className="py-3.5 px-4 align-top">
+                        {renderStatusCell(item.statusVerifikasi)}
+                      </td>
+
+                      <td className="py-3.5 px-4 align-top whitespace-nowrap">
+                        {item.downloadKartuKeluarga ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              triggerFileDownload(
+                                item.downloadKartuKeluarga || '',
+                                item.kkFileName || `${item.noPendaftaran}_KK`
+                              )
+                            }
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-md hover:bg-[#E4EFE8] transition-colors cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Download KK</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs text-[#7E8F84]">Belum tersedia</span>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4 align-top text-right whitespace-nowrap">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setPrintApplicant(item)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-md hover:bg-[#F2F6F3] transition-colors cursor-pointer"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Cetak Bukti</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openDetailModal(item)}
+                            className="px-3 py-1.5 text-xs font-semibold text-white bg-[#0E6245] rounded-md hover:bg-[#0B4F37] transition-colors cursor-pointer"
+                          >
+                            Verifikasi
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
@@ -838,7 +913,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                     id="edit-status"
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245]"
+                    className="w-full min-h-[44px] px-3.5 py-2 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245]"
                   >
                     {VERIFICATION_STATUS_OPTIONS.map((opt) => (
                       <option key={opt} value={opt}>
@@ -861,7 +936,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                     value={editNote}
                     onChange={(e) => setEditNote(e.target.value)}
                     placeholder="Contoh: Berkas lengkap. Jadwal observasi hari Sabtu pukul 08.00 WIB."
-                    className="w-full px-3.5 py-2 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245]"
+                    className="w-full px-3.5 py-2 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245]"
                   />
                 </div>
 
@@ -871,13 +946,13 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => {
                       setPrintApplicant(selectedApplicant);
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Cetak Bukti / Daftar Ulang</span>
@@ -886,7 +961,7 @@ export default function AdminDashboard({ onBackToPortal }: AdminDashboardProps) 
                   <button
                     type="submit"
                     disabled={isSavingStatus}
-                    className="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 cursor-pointer"
                   >
                     {isSavingStatus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>Simpan Perubahan Status</span>

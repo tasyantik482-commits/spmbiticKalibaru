@@ -251,16 +251,16 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
             </p>
           </div>
 
-          <div className="bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg px-5 py-4 shrink-0">
+          <div className="bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg px-4 sm:px-5 py-4 shrink-0">
             <div className="text-xs font-medium text-[#4A5D52]">Nomor Pendaftaran</div>
-            <div className="mt-1 flex items-center gap-3">
-              <span className="font-mono text-xl font-semibold tracking-tight text-[#0F2419] tabular-nums">
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <span className="font-mono text-lg sm:text-xl font-semibold tracking-tight text-[#0F2419] tabular-nums">
                 {receipt.noPendaftaran}
               </span>
               <button
                 type="button"
                 onClick={handleCopyRegNumber}
-                className="no-print inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-[#0E6245] bg-white border border-[#CFE0D5] rounded-md hover:bg-[#EBF4EE] transition-colors cursor-pointer"
+                className="no-print inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1.5 text-xs font-medium text-[#0E6245] bg-white border border-[#CFE0D5] rounded-md hover:bg-[#EBF4EE] transition-colors cursor-pointer"
                 title="Salin nomor pendaftaran"
               >
                 {copiedRegNo ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -299,19 +299,19 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
           </div>
         )}
 
-        <div className="no-print mt-8 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="no-print mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
             <button
               type="button"
               onClick={() => onGoToStatusCheck(receipt.noPendaftaran, receipt.noTelepon)}
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               Cek Status Pendaftaran
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-[#0F2419] bg-white border border-[#CFD9D2] rounded-lg hover:bg-[#F4F7F5] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 text-sm font-medium text-[#0F2419] bg-white border border-[#CFD9D2] rounded-lg hover:bg-[#F4F7F5] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak Bukti</span>
@@ -321,7 +321,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
           <button
             type="button"
             onClick={handleResetForm}
-            className="text-sm font-medium text-[#4A5D52] hover:text-[#0F2419] underline underline-offset-4 cursor-pointer"
+            className="min-h-[44px] text-sm font-medium text-[#4A5D52] hover:text-[#0F2419] underline underline-offset-4 cursor-pointer text-center sm:text-right"
           >
             Daftarkan Calon Murid Lain
           </button>
@@ -334,7 +334,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-10 space-y-10"
+      className="bg-white border border-[#DCE4DE] rounded-xl p-5 sm:p-8 lg:p-10 space-y-8 sm:space-y-10"
     >
       {/* 01. Identitas Wajib */}
       <section className="space-y-6">
@@ -345,7 +345,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
           <span className="text-xs text-[#5A6D62]">Tanda * wajib diisi</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
           <div className="md:col-span-2">
             <label htmlFor="namaCalonMurid" className="block text-sm font-medium text-[#1D3126] mb-1.5">
               Nama Lengkap Calon Murid <span className="text-[#B91C1C]">*</span>
@@ -357,7 +357,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               value={namaCalonMurid}
               onChange={(e) => setNamaCalonMurid(e.target.value)}
               placeholder="Contoh: Ahmad Zaidan Al-Fatih"
-              className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             />
           </div>
 
@@ -372,7 +372,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               value={namaOrangTua}
               onChange={(e) => setNamaOrangTua(e.target.value)}
               placeholder="Contoh: Budi Santoso / Siti Aminah"
-              className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             />
           </div>
 
@@ -383,11 +383,12 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
             <input
               id="noTelepon"
               type="tel"
+              inputMode="tel"
               required
               value={noTelepon}
               onChange={(e) => setNoTelepon(e.target.value)}
               placeholder="Contoh: 081234567890"
-              className="w-full px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:font-sans placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:font-sans placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             />
             <p className="mt-1 text-xs text-[#5A6D62]">
               Digunakan untuk konfirmasi panitia & pengecekan status pendaftaran.
@@ -405,7 +406,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
           <span className="text-xs text-[#5A6D62]">Data Dapodik awal (wajib)</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
           <div>
             <label htmlFor="tinggiBadan" className="block text-sm font-medium text-[#1D3126] mb-1.5">
               Tinggi Badan <span className="text-[#B91C1C]">*</span>
@@ -414,6 +415,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               <input
                 id="tinggiBadan"
                 type="number"
+                inputMode="decimal"
                 min={50}
                 max={200}
                 step="0.1"
@@ -421,7 +423,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
                 value={tinggiBadan}
                 onChange={(e) => setTinggiBadan(e.target.value)}
                 placeholder="115"
-                className="w-full pl-3.5 pr-12 py-2.5 text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+                className="w-full min-h-[44px] pl-3.5 pr-12 py-2.5 text-base sm:text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-[#5A6D62]">
                 cm
@@ -437,6 +439,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               <input
                 id="beratBadan"
                 type="number"
+                inputMode="decimal"
                 min={5}
                 max={120}
                 step="0.1"
@@ -444,7 +447,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
                 value={beratBadan}
                 onChange={(e) => setBeratBadan(e.target.value)}
                 placeholder="21"
-                className="w-full pl-3.5 pr-12 py-2.5 text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+                className="w-full min-h-[44px] pl-3.5 pr-12 py-2.5 text-base sm:text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-[#5A6D62]">
                 kg
@@ -460,6 +463,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               <input
                 id="lingkarKepala"
                 type="number"
+                inputMode="decimal"
                 min={30}
                 max={75}
                 step="0.1"
@@ -467,7 +471,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
                 value={lingkarKepala}
                 onChange={(e) => setLingkarKepala(e.target.value)}
                 placeholder="50"
-                className="w-full pl-3.5 pr-12 py-2.5 text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+                className="w-full min-h-[44px] pl-3.5 pr-12 py-2.5 text-base sm:text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-[#5A6D62]">
                 cm
@@ -519,7 +523,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                   <input
                     ref={(el) => {
                       fileInputRefs.current[slot.key] = el;
@@ -532,7 +536,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
                   />
                   <label
                     htmlFor={`file-${slot.key}`}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#0F2419] bg-[#F4F7F5] border border-[#CCD6CE] rounded-lg hover:bg-[#E7EFEA] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0F2419] bg-[#F4F7F5] border border-[#CCD6CE] rounded-lg hover:bg-[#E7EFEA] transition-colors cursor-pointer whitespace-nowrap shrink-0"
                   >
                     <Upload className="w-3.5 h-3.5" />
                     <span>{uploaded ? 'Ganti Berkas' : 'Pilih Berkas'}</span>
@@ -542,7 +546,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
                       type="button"
                       onClick={() => handleRemoveFile(slot.key)}
                       aria-label={`Hapus ${slot.label}`}
-                      className="p-2 text-[#64746B] hover:text-[#B91C1C] border border-transparent hover:border-[#F2D0D0] rounded-lg transition-colors cursor-pointer"
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#64746B] hover:text-[#B91C1C] border border-[#DCE4DE] sm:border-transparent hover:border-[#F2D0D0] rounded-lg transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -563,7 +567,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
           <span className="text-xs text-[#5A6D62]">Kolom di bawah bersifat opsional</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[#1D3126] mb-1.5">
               Alamat Email <span className="text-xs font-normal text-[#5A6D62]">(Opsional)</span>
@@ -571,10 +575,11 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
             <input
               id="email"
               type="email"
+              inputMode="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="orangtua@contoh.com"
-              className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             />
           </div>
 
@@ -587,7 +592,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               type="date"
               value={tanggalLahir}
               onChange={(e) => setTanggalLahir(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             />
           </div>
 
@@ -601,7 +606,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               onChange={(e) =>
                 setJenisKelamin(e.target.value as '' | 'Laki-laki' | 'Perempuan')
               }
-              className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             >
               <option value="">Pilih jenis kelamin</option>
               <option value="Laki-laki">Laki-laki</option>
@@ -619,7 +624,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               value={asalTkPaud}
               onChange={(e) => setAsalTkPaud(e.target.value)}
               placeholder="Contoh: TK Islam Al-Hikmah Kalibaru"
-              className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             />
           </div>
 
@@ -633,7 +638,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               value={catatanSekolah}
               onChange={(e) => setCatatanSekolah(e.target.value)}
               placeholder="Tuliskan informasi khusus bila ada (misal kondisi kesehatan, alergi, minat program reguler/boarding, atau keterangan lainnya)."
-              className="w-full px-3.5 py-2.5 text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+              className="w-full px-3.5 py-2.5 text-base sm:text-sm text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
             />
           </div>
         </div>
@@ -645,7 +650,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
               type="checkbox"
               checked={persetujuan}
               onChange={(e) => setPersetujuan(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-[#9EB0A3] text-[#0E6245] focus:ring-[#0E6245] shrink-0 cursor-pointer"
+              className="mt-0.5 h-5 w-5 sm:h-4 sm:w-4 rounded border-[#9EB0A3] text-[#0E6245] focus:ring-[#0E6245] shrink-0 cursor-pointer"
             />
             <span className="text-sm leading-relaxed text-[#1D3126]">
               Saya menyatakan bahwa seluruh data dan berkas yang diisi atau dilampirkan adalah benar, serta memberikan izin kepada pihak{' '}
@@ -673,7 +678,7 @@ export default function RegistrationForm({ onGoToStatusCheck }: RegistrationForm
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0 cursor-pointer"
         >
           {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
           <span>{isSubmitting ? 'Mengirim Pendaftaran...' : 'Kirim Pendaftaran SPMB'}</span>

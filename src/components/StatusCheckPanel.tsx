@@ -91,7 +91,7 @@ export default function StatusCheckPanel({
   };
 
   return (
-    <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-10 space-y-8">
+    <div className="bg-white border border-[#DCE4DE] rounded-xl p-5 sm:p-8 lg:p-10 space-y-8">
       <div className="max-w-2xl space-y-2">
         <h3 className="font-display text-lg font-semibold text-[#0F2419]">
           Cek Status Pendaftaran SPMB
@@ -113,7 +113,7 @@ export default function StatusCheckPanel({
             value={noPendaftaran}
             onChange={(e) => setNoPendaftaran(e.target.value)}
             placeholder="Contoh: SPMB-IC-2026-0001"
-            className="w-full px-3.5 py-2.5 text-sm font-mono uppercase text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:normal-case placeholder:font-sans placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+            className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm font-mono uppercase text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:normal-case placeholder:font-sans placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
           />
         </div>
 
@@ -124,10 +124,11 @@ export default function StatusCheckPanel({
           <input
             id="cek-no-telepon"
             type="tel"
+            inputMode="tel"
             value={noTelepon}
             onChange={(e) => setNoTelepon(e.target.value)}
             placeholder="Contoh: 081234567890"
-            className="w-full px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:font-sans placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
+            className="w-full min-h-[44px] px-3.5 py-2.5 text-base sm:text-sm font-mono tabular-nums text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg placeholder:font-sans placeholder:text-[#8A9B90] focus:outline-none focus:border-[#0E6245] focus:ring-2 focus:ring-[#0E6245]/15 transition-colors"
           />
         </div>
 
@@ -135,7 +136,7 @@ export default function StatusCheckPanel({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -207,17 +208,17 @@ export default function StatusCheckPanel({
           </div>
 
           {(result.urlKartuKeluarga || result.urlAktaKelahiran || result.urlPasFoto) && (
-            <div className="flex flex-wrap items-center gap-4 pt-1 text-xs">
-              <span className="font-medium text-[#5A6D62]">Berkas Terunggah:</span>
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 text-xs">
+              <span className="font-medium text-[#5A6D62] w-full sm:w-auto">Berkas Terunggah:</span>
               {result.urlKartuKeluarga && (
                 <a
                   href={result.urlKartuKeluarga}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-medium text-[#0E6245] hover:underline"
+                  className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-md border border-[#CFE0D5] bg-[#F7FAF8] font-medium text-[#0E6245] hover:bg-[#EDF5F0] transition-colors"
                 >
                   <span>Kartu Keluarga</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
               {result.urlAktaKelahiran && (
@@ -225,10 +226,10 @@ export default function StatusCheckPanel({
                   href={result.urlAktaKelahiran}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-medium text-[#0E6245] hover:underline"
+                  className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-md border border-[#CFE0D5] bg-[#F7FAF8] font-medium text-[#0E6245] hover:bg-[#EDF5F0] transition-colors"
                 >
                   <span>Akta Kelahiran</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
               {result.urlPasFoto && (
@@ -236,10 +237,10 @@ export default function StatusCheckPanel({
                   href={result.urlPasFoto}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-medium text-[#0E6245] hover:underline"
+                  className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-md border border-[#CFE0D5] bg-[#F7FAF8] font-medium text-[#0E6245] hover:bg-[#EDF5F0] transition-colors"
                 >
                   <span>Pas Foto 4×6</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
             </div>
