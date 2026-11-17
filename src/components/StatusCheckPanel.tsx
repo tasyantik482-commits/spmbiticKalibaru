@@ -1,23 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import {
   AlertCircle,
+  CalendarClock,
   CheckCircle2,
   Clock,
   ExternalLink,
   Loader2,
+  MessageCircle,
   Search,
 } from 'lucide-react';
-import { lookupRegistrationStatus } from '../services/spmbService';
+import {
+  buildWhatsAppUrl,
+  formatRupiah,
+  lookupRegistrationStatus,
+} from '../services/spmbService';
 import type { StatusLookupResult } from '../types/spmb';
 
 interface StatusCheckPanelProps {
   initialNoPendaftaran?: string;
   initialNoTelepon?: string;
+  waGroupTitle?: string;
+  waGroupUrl?: string;
 }
 
 export default function StatusCheckPanel({
   initialNoPendaftaran = '',
   initialNoTelepon = '',
+  waGroupTitle = 'Grup WA SPMB SDIT INSAN CENDEKIA 27/28',
+  waGroupUrl = '',
 }: StatusCheckPanelProps) {
   const [noPendaftaran, setNoPendaftaran] = useState(initialNoPendaftaran);
   const [noTelepon, setNoTelepon] = useState(initialNoTelepon);
@@ -36,7 +46,9 @@ export default function StatusCheckPanel({
     setResult(null);
 
     if (!noPendaftaran.trim() || !noTelepon.trim()) {
-      setError('Masukkan Nomor Pendaftaran dan Nomor Telepon/WhatsApp yang digunakan saat mendaftar.');
+      setError(
+        'Masukkan Nomor Pendaftaran dan Nomor Telepon/WhatsApp yang digunakan saat mendaftar.'
+      );
       return;
     }
 
@@ -90,21 +102,36 @@ export default function StatusCheckPanel({
     });
   };
 
+  const cleanWaGroupUrl = waGroupUrl.trim();
+  const fallbackWaHref = result
+    ? buildWhatsAppUrl(
+        '085236000000',
+        `Assalamu'alaikum Panitia SPMB SDIT Insan Cendekia Kalibaru, mohon info link undangan *${waGroupTitle}* untuk ananda *${result.namaCalonMurid}* (${result.noPendaftaran}).`
+      )
+    : '';
+
   return (
     <div className="bg-white border border-[#DCE4DE] rounded-xl p-5 sm:p-8 lg:p-10 space-y-8">
       <div className="max-w-2xl space-y-2">
         <h3 className="font-display text-lg font-semibold text-[#0F2419]">
-          Cek Status Pendaftaran SPMB
+          Cek Status Pendaftaran &amp; Jadwal Observasi
         </h3>
         <p className="text-sm text-[#4A5D52] leading-relaxed">
           Masukkan <strong className="font-medium text-[#0F2419]">Nomor Pendaftaran</strong> dan{' '}
-          <strong className="font-medium text-[#0F2419]">Nomor Telepon / WhatsApp</strong> yang didaftarkan untuk melihat hasil verifikasi berkas dan arahan panitia.
+          <strong className="font-medium text-[#0F2419]">Nomor Telepon / WhatsApp</strong> yang didaftarkan untuk melihat hasil verifikasi berkas, pembayaran, dan jadwal observasi calon murid.
         </p>
       </div>
 
-      <form onSubmit={handleSearch} noValidate className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      <form
+        onSubmit={handleSearch}
+        noValidate
+        className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+      >
         <div className="md:col-span-5">
-          <label htmlFor="cek-no-pendaftaran" className="block text-sm font-medium text-[#1D3126] mb-1.5">
+          <label
+            htmlFor="cek-no-pendaftaran"
+            className="block text-sm font-medium text-[#1D3126] mb-1.5"
+          >
             Nomor Pendaftaran
           </label>
           <input
@@ -118,7 +145,10 @@ export default function StatusCheckPanel({
         </div>
 
         <div className="md:col-span-5">
-          <label htmlFor="cek-no-telepon" className="block text-sm font-medium text-[#1D3126] mb-1.5">
+          <label
+            htmlFor="cek-no-telepon"
+            className="block text-sm font-medium text-[#1D3126] mb-1.5"
+          >
             Nomor Telepon / WhatsApp
           </label>
           <input
@@ -162,7 +192,9 @@ export default function StatusCheckPanel({
         <div className="pt-8 border-t border-[#E6ECE7] space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#E6ECE7]">
             <div>
-              <div className="text-xs font-medium text-[#5A6D62]">Nomor Pendaftaran</div>
+              <div className="text-xs font-medium text-[#5A6D62]">
+                Nomor Pendaftaran · {result.gelombang || 'Gelombang 1'}
+              </div>
               <div className="mt-1 font-mono text-xl font-semibold text-[#0F2419] tabular-nums">
                 {result.noPendaftaran}
               </div>
@@ -173,10 +205,34 @@ export default function StatusCheckPanel({
             </div>
           </div>
 
+          {/* Highlight Jadwal Observasi (Perbaikan #6) */}
+          {(result.tanggalObservasi || result.waktuObservasi) && (
+            <div className="rounded-xl border border-[#B9DEC7] bg-[#F2F9F4] p-4 sm:p-5 flex items-start gap-3.5">
+              <CalendarClock className="w-5 h-5 text-[#0E6245] shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="text-xs font-semibold uppercase tracking-wide text-[#0E6245]">
+                  Jadwal Observasi Calon Murid Baru
+                </div>
+                <div className="text-base font-semibold text-[#0F2419]">
+                  {result.tanggalObservasi ? formatTanggal(result.tanggalObservasi) : 'Tanggal menyusul'}
+                  {result.waktuObservasi ? ` · Pukul ${result.waktuObservasi}` : ''}
+                </div>
+                <p className="text-xs text-[#355242]">
+                  Lokasi: Kampus SDIT Insan Cendekia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).
+                </p>
+              </div>
+            </div>
+          )}
+
           <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 text-sm">
             <div>
               <dt className="text-xs font-medium text-[#5A6D62]">Nama Calon Murid</dt>
-              <dd className="mt-1 font-semibold text-[#0F2419]">{result.namaCalonMurid}</dd>
+              <dd className="mt-1 font-semibold text-[#0F2419]">
+                {result.namaCalonMurid}
+                {result.namaPanggilan && result.namaPanggilan !== '-'
+                  ? ` (${result.namaPanggilan})`
+                  : ''}
+              </dd>
             </div>
             <div>
               <dt className="text-xs font-medium text-[#5A6D62]">Nama Orang Tua / Wali</dt>
@@ -187,9 +243,10 @@ export default function StatusCheckPanel({
               <dd className="mt-1 text-[#0F2419]">{formatTanggal(result.waktuDaftar)}</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-[#5A6D62]">Data Fisik (TB / BB / LK)</dt>
+              <dt className="text-xs font-medium text-[#5A6D62]">Data Fisik (TB / BB)</dt>
               <dd className="mt-1 font-mono text-xs sm:text-sm text-[#0F2419] tabular-nums">
-                {result.tinggiBadan} cm · {result.beratBadan} kg · {result.lingkarKepala} cm
+                {result.tinggiBadan} cm · {result.beratBadan} kg
+                {result.lingkarKepala ? ` · LK ${result.lingkarKepala} cm` : ''}
               </dd>
             </div>
             <div>
@@ -197,8 +254,14 @@ export default function StatusCheckPanel({
               <dd className="mt-1 text-[#0F2419]">{result.asalTkPaud || '-'}</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-[#5A6D62]">Nomor Telepon / WA</dt>
-              <dd className="mt-1 font-mono text-[#0F2419] tabular-nums">{result.noTelepon}</dd>
+              <dt className="text-xs font-medium text-[#5A6D62]">Pembayaran Pendaftaran</dt>
+              <dd className="mt-1 text-[#0F2419]">
+                {result.metodePembayaran && result.metodePembayaran !== '-'
+                  ? `${result.metodePembayaran} · ${formatRupiah(
+                      result.nominalPembayaran || 50000
+                    )}`
+                  : '-'}
+              </dd>
             </div>
           </dl>
 
@@ -207,9 +270,16 @@ export default function StatusCheckPanel({
             <p className="text-sm text-[#2D4035] leading-relaxed">{result.catatanPanitia}</p>
           </div>
 
-          {(result.urlKartuKeluarga || result.urlAktaKelahiran || result.urlPasFoto) && (
+          {/* Berkas Terunggah */}
+          {(result.urlKartuKeluarga ||
+            result.urlAktaKelahiran ||
+            result.urlPasFoto ||
+            result.urlKtpOrangTua ||
+            result.urlBuktiPembayaran) && (
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 text-xs">
-              <span className="font-medium text-[#5A6D62] w-full sm:w-auto">Berkas Terunggah:</span>
+              <span className="font-medium text-[#5A6D62] w-full sm:w-auto">
+                Berkas Terunggah:
+              </span>
               {result.urlKartuKeluarga && (
                 <a
                   href={result.urlKartuKeluarga}
@@ -239,12 +309,53 @@ export default function StatusCheckPanel({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-md border border-[#CFE0D5] bg-[#F7FAF8] font-medium text-[#0E6245] hover:bg-[#EDF5F0] transition-colors"
                 >
-                  <span>Pas Foto 4×6</span>
+                  <span>Pas Foto 3×4</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+              {result.urlKtpOrangTua && (
+                <a
+                  href={result.urlKtpOrangTua}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-md border border-[#CFE0D5] bg-[#F7FAF8] font-medium text-[#0E6245] hover:bg-[#EDF5F0] transition-colors"
+                >
+                  <span>KTP Ortu/Wali</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+              {result.urlBuktiPembayaran && (
+                <a
+                  href={result.urlBuktiPembayaran}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-md border border-[#CFE0D5] bg-[#F7FAF8] font-medium text-[#0E6245] hover:bg-[#EDF5F0] transition-colors"
+                >
+                  <span>Bukti Pembayaran</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
             </div>
           )}
+
+          {/* Undangan Grup WA SPMB (Perbaikan #3) */}
+          <div className="rounded-lg border border-[#CFE0D5] bg-[#F7FAF8] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="space-y-0.5">
+              <div className="text-xs font-semibold text-[#0F2419]">{waGroupTitle}</div>
+              <p className="text-xs text-[#4A5D52]">
+                Pastikan Bapak/Ibu sudah bergabung ke grup WhatsApp wali murid untuk pengumuman jadwal observasi.
+              </p>
+            </div>
+            <a
+              href={cleanWaGroupUrl || fallbackWaHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] whitespace-nowrap shrink-0"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>{cleanWaGroupUrl ? 'Gabung Grup WA' : 'Tanya Link Grup ke Panitia'}</span>
+            </a>
+          </div>
         </div>
       )}
     </div>

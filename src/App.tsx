@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Award,
   Camera,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
   FileCheck2,
   Menu,
+  Newspaper,
   School,
+  Sparkles,
   X,
 } from 'lucide-react';
 import heroCampusImg from './assets/images/hero_itic_school_campus_1794616635107.jpg';
@@ -20,6 +23,8 @@ import kegiatanKelasKebersihanImg from './assets/images/gallery/kegiatan_kelas_k
 import RegistrationForm from './components/RegistrationForm';
 import StatusCheckPanel from './components/StatusCheckPanel';
 import AdminDashboard from './components/AdminDashboard';
+import { fetchSiteProfile, getCachedSiteProfile } from './services/spmbService';
+import type { SiteProfileConfig } from './types/spmb';
 
 type PortalTab = 'daftar' | 'status';
 type ViewMode = 'portal' | 'admin';
@@ -34,28 +39,7 @@ interface GalleryItem {
   alt: string;
 }
 
-const FOKUS_PENDIDIKAN = [
-  {
-    number: '01.',
-    title: 'Ibadah, akhlak, dan Al-Qur’an',
-    description:
-      'Membekali peserta didik agar taat beribadah, berakhlak mulia, dan mencintai Al-Qur’an.',
-  },
-  {
-    number: '02.',
-    title: 'Pembelajaran menyenangkan dan prestatif',
-    description:
-      'Mengembangkan proses belajar yang menyenangkan serta mendukung kecerdasan intelektual dan emosional.',
-  },
-  {
-    number: '03.',
-    title: 'Hidup bersih dan disiplin',
-    description:
-      'Menumbuhkan kebiasaan menjaga kebersihan dan disiplin dalam kegiatan sehari-hari.',
-  },
-];
-
-const GALERI_KEGIATAN: GalleryItem[] = [
+const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
   {
     id: 'sholat-dhuha',
     src: kegiatanSholatDhuhaImg,
@@ -121,23 +105,27 @@ const GALERI_KEGIATAN: GalleryItem[] = [
 const ADMISSION_STEPS = [
   {
     step: '01',
-    title: 'Lengkapi Biodata',
-    detail: 'Isi identitas calon murid, nama orang tua/wali, nomor WhatsApp aktif, serta data tinggi badan, berat badan, dan lingkar kepala.',
+    title: 'Pilih Gelombang & Isi Biodata',
+    detail:
+      'Pilih Gelombang 1 atau 2 lalu lengkapi identitas calon murid, biodata ayah/ibu/wali, alamat tempat tinggal, serta asal TK/PAUD.',
   },
   {
     step: '02',
-    title: 'Unggah 3 Berkas Wajib',
-    detail: 'Lampirkan Kartu Keluarga, Akta Kelahiran, dan Pas Foto 4 × 6 dengan ukuran maksimal 900 KB per berkas.',
+    title: 'Biaya Daftar & 5 Berkas Wajib',
+    detail:
+      'Bayar biaya pendaftaran Rp 50.000,- (Bank Jatim 1592015532, QRIS Sekolah, atau Sekretariat) dan unggah KK, Akta, Pas Foto 3 × 4, KTP Ortu, & Bukti Bayar.',
   },
   {
     step: '03',
-    title: 'Nomor Pendaftaran Otomatis',
-    detail: 'Sistem menerbitkan Nomor Pendaftaran unik (SPMB-IC-2026-XXXX) secara langsung setelah data dikirim.',
+    title: 'Nomor Daftar & Grup WA 27/28',
+    detail:
+      'Sistem menerbitkan Nomor Pendaftaran otomatis dan mengarahkan wali murid bergabung ke Grup WA SPMB SDIT INSAN CENDEKIA 27/28.',
   },
   {
     step: '04',
-    title: 'Verifikasi & Cek Status',
-    detail: 'Pantau status verifikasi berkas dan jadwal observasi kapan saja menggunakan Nomor Pendaftaran dan Nomor Telepon.',
+    title: 'Verifikasi & Jadwal Observasi',
+    detail:
+      'Pantau hasil verifikasi berkas dan tanggal jadwal observasi calon murid melalui tab Cek Status Pendaftaran.',
   },
 ];
 
@@ -148,10 +136,39 @@ export default function App() {
   const [prefillPhone, setPrefillPhone] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [siteProfile, setSiteProfile] = useState<SiteProfileConfig>(() =>
+    getCachedSiteProfile()
+  );
+
   const [heroImgError, setHeroImgError] = useState(false);
   const [logoImgError, setLogoImgError] = useState(false);
   const [brokenGalleryIds, setBrokenGalleryIds] = useState<Record<string, boolean>>({});
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchSiteProfile().then((loaded) => {
+      if (active) {
+        setSiteProfile(loaded);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const allGalleryItems: GalleryItem[] = useMemo(() => {
+    const customMapped: GalleryItem[] = (siteProfile.customGallery || []).map((g) => ({
+      id: g.id,
+      src: g.imageUrl,
+      title: g.title,
+      category: g.category || 'Kegiatan Sekolah',
+      context: g.context || 'Dokumentasi Terbaru',
+      caption: g.caption || g.title,
+      alt: `${g.title} — SDIT Insan Cendekia Kalibaru`,
+    }));
+    return [...GALERI_KEGIATAN_DASAR, ...customMapped];
+  }, [siteProfile.customGallery]);
 
   const markGalleryBroken = (id: string) => {
     setBrokenGalleryIds((prev) => ({ ...prev, [id]: true }));
@@ -163,16 +180,20 @@ export default function App() {
       if (event.key === 'Escape') {
         setLightboxIndex(null);
       } else if (event.key === 'ArrowRight') {
-        setLightboxIndex((prev) => (prev === null ? null : (prev + 1) % GALERI_KEGIATAN.length));
+        setLightboxIndex((prev) =>
+          prev === null ? null : (prev + 1) % allGalleryItems.length
+        );
       } else if (event.key === 'ArrowLeft') {
         setLightboxIndex((prev) =>
-          prev === null ? null : (prev - 1 + GALERI_KEGIATAN.length) % GALERI_KEGIATAN.length
+          prev === null
+            ? null
+            : (prev - 1 + allGalleryItems.length) % allGalleryItems.length
         );
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [lightboxIndex]);
+  }, [lightboxIndex, allGalleryItems.length]);
 
   const navigateToSection = (sectionId: string) => {
     setViewMode('portal');
@@ -209,7 +230,10 @@ export default function App() {
     scrollToPortal('status');
   };
 
-  const activeLightboxItem = lightboxIndex !== null ? GALERI_KEGIATAN[lightboxIndex] : null;
+  const activeLightboxItem =
+    lightboxIndex !== null && allGalleryItems[lightboxIndex]
+      ? allGalleryItems[lightboxIndex]
+      : null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F9F7] text-[#112218]">
@@ -356,397 +380,508 @@ export default function App() {
 
       <main className="flex-1">
         {viewMode === 'admin' ? (
-          <AdminDashboard onBackToPortal={() => scrollToPortal('daftar')} />
+          <AdminDashboard
+            onBackToPortal={() => scrollToPortal('daftar')}
+            siteProfile={siteProfile}
+            onSiteProfileChange={setSiteProfile}
+          />
         ) : (
           <>
-        {/* Hero Section */}
-        <section id="beranda" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-8 sm:pb-10">
-          <div className="relative overflow-hidden rounded-2xl border border-[#D7E0D9] bg-[#10291D] min-h-[430px] sm:min-h-[480px] lg:min-h-[540px] flex items-end">
-            {!heroImgError ? (
-              <img
-                src={heroCampusImg}
-                alt="Lingkungan kampus hijau SDIT Insan Cendekia Kalibaru Banyuwangi"
-                referrerPolicy="no-referrer"
-                onError={() => setHeroImgError(true)}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-[#0E4430] via-[#133828] to-[#0A2218] flex items-center justify-center">
-                <School className="w-20 h-20 text-white/15" />
+            {/* Hero Section */}
+            <section id="beranda" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-8 sm:pb-10">
+              <div className="relative overflow-hidden rounded-2xl border border-[#D7E0D9] bg-[#10291D] min-h-[430px] sm:min-h-[480px] lg:min-h-[540px] flex items-end">
+                {!heroImgError ? (
+                  <img
+                    src={heroCampusImg}
+                    alt="Lingkungan kampus hijau SDIT Insan Cendekia Kalibaru Banyuwangi"
+                    referrerPolicy="no-referrer"
+                    onError={() => setHeroImgError(true)}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#0E4430] via-[#133828] to-[#0A2218] flex items-center justify-center">
+                    <School className="w-20 h-20 text-white/15" />
+                  </div>
+                )}
+
+                {/* Measured contrast scrim */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-t from-[#081A12]/92 via-[#0A2016]/78 to-[#0A2016]/35 lg:bg-gradient-to-r lg:from-[#081A12]/92 lg:via-[#0A2016]/72 lg:to-transparent"
+                />
+
+                <div className="relative z-10 w-full p-5 sm:p-10 lg:p-14 max-w-3xl space-y-4 sm:space-y-5">
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm font-medium text-[#CDE2D5]">
+                    <span>SD Islam Terpadu Insan Cendekia</span>
+                    <span aria-hidden="true">·</span>
+                    <span>Kec. Kalibaru, Banyuwangi</span>
+                    <span aria-hidden="true">·</span>
+                    <span className="font-mono tabular-nums">NPSN 20573193</span>
+                    <span aria-hidden="true">·</span>
+                    <span>Akreditasi A</span>
+                    <span aria-hidden="true">·</span>
+                    <span className="font-semibold text-white">
+                      Aktif: {siteProfile.activeWave}
+                    </span>
+                  </div>
+
+                  <h1
+                    className="font-display font-bold tracking-tight text-white leading-[1.15]"
+                    style={{ fontSize: 'clamp(1.75rem, 4vw, 3.35rem)', textWrap: 'balance' }}
+                  >
+                    Penerimaan Murid Baru Tahun Ajaran 2026/2027
+                  </h1>
+
+                  <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-2xl">
+                    Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendekia Kalibaru membuka pendaftaran <strong>Gelombang 1 &amp; Gelombang 2</strong> untuk mendampingi peserta didik bertumbuh melalui pembinaan ibadah dan cinta Al-Qur’an, pembelajaran menyenangkan, serta pembiasaan hidup bersih dan disiplin.
+                  </p>
+
+                  {siteProfile.waveInfoNote && (
+                    <p className="text-xs sm:text-sm text-[#CDE2D5]">{siteProfile.waveInfoNote}</p>
+                  )}
+
+                  <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+                    <button
+                      type="button"
+                      onClick={() => scrollToPortal('daftar')}
+                      className="inline-flex items-center justify-center min-h-[46px] px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] border border-[#197B59] rounded-lg hover:bg-[#127855] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      Isi Formulir Pendaftaran
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollToPortal('status')}
+                      className="inline-flex items-center justify-center min-h-[46px] px-5 py-3 text-sm font-medium text-white bg-white/10 border border-white/25 rounded-lg hover:bg-white/20 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      Cek Status &amp; Jadwal Observasi
+                    </button>
+                  </div>
+                </div>
               </div>
+            </section>
+
+            {/* Visi & Misi SDIT Insan Cendekia */}
+            <section id="visi-misi" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pb-12">
+              <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                <div className="lg:col-span-5 space-y-3">
+                  <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                    Visi SDIT Insan Cendekia
+                  </p>
+                  <h2
+                    className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#0F2419] leading-snug"
+                    style={{ textWrap: 'balance' }}
+                  >
+                    “Sholih, Cerdas, Mandiri.”
+                  </h2>
+                  <p className="text-sm text-[#4A5D52] leading-relaxed">
+                    Pendidikan di SDIT Insan Cendekia Kalibaru diarahkan untuk mendampingi peserta didik mengembangkan ibadah, akhlak mulia, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian dalam kehidupan sehari-hari.
+                  </p>
+                </div>
+
+                <div className="lg:col-span-7 space-y-3">
+                  <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                    Misi Sekolah
+                  </p>
+                  <ol className="divide-y divide-[#E6ECE7] border-y border-[#E6ECE7]">
+                    <li className="py-3.5 flex items-start gap-3.5">
+                      <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
+                        01.
+                      </span>
+                      <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
+                        Membekali peserta didik taat beribadah, berakhlak mulia, dan cinta Al-Qur’an.
+                      </span>
+                    </li>
+                    <li className="py-3.5 flex items-start gap-3.5">
+                      <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
+                        02.
+                      </span>
+                      <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
+                        Mengembangkan proses pembelajaran yang menyenangkan dan prestatif (IQ dan EQ).
+                      </span>
+                    </li>
+                    <li className="py-3.5 flex items-start gap-3.5">
+                      <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
+                        03.
+                      </span>
+                      <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
+                        Membiasakan hidup bersih dan disiplin (AQ).
+                      </span>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </section>
+
+            {/* Tentang Sekolah & Fokus Pendidikan (Dikelola dari Profil Admin) */}
+            <section id="program" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
+                <div className="lg:col-span-6 flex flex-col justify-between space-y-8">
+                  <div className="space-y-3.5">
+                    <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                      Profil Sekolah
+                    </p>
+                    <h2
+                      className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
+                      style={{ textWrap: 'balance' }}
+                    >
+                      Tentang SDIT Insan Cendekia Kalibaru
+                    </h2>
+                    <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
+                      SDIT Insan Cendekia Kalibaru adalah sekolah dasar Islam terpadu di Kalibaru Kulon, Kabupaten Banyuwangi, yang berada di bawah naungan Yayasan Bina Insan Mulia Kalibaru. Pendidikan di sekolah ini berlandaskan visi “Sholih, Cerdas, Mandiri” dan diarahkan untuk mendampingi peserta didik dalam mengembangkan ibadah, akhlak, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian.
+                    </p>
+                    <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
+                      Arah pendidikan tersebut diwujudkan melalui pembelajaran yang menyenangkan dan mendorong prestasi, disertai pembiasaan hidup bersih dan disiplin. Sekolah berupaya menghadirkan proses belajar yang membantu peserta didik tumbuh dengan nilai-nilai Islami dan bekal untuk menjalani kehidupan sehari-hari.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="font-display text-lg font-semibold text-[#0F2419]">
+                      Fokus Pendidikan &amp; Program Sekolah
+                    </h3>
+                    <div className="divide-y divide-[#E1E8E2] border-y border-[#E1E8E2]">
+                      {siteProfile.programs.map((item, idx) => (
+                        <div key={item.id} className="py-4 first:pt-4 last:pb-4 space-y-1">
+                          <h4 className="font-display text-base font-semibold text-[#0F2419]">
+                            <span className="font-mono text-sm text-[#0E6245] mr-2 tabular-nums">
+                              {String(idx + 1).padStart(2, '0')}.
+                            </span>
+                            {item.title}
+                          </h4>
+                          <p className="text-sm text-[#4A5D52] leading-relaxed pl-0 sm:pl-7">
+                            {item.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
+                  {[0, 1].map((idx) => {
+                    const item = allGalleryItems[idx];
+                    if (!item) return null;
+                    const isBroken = Boolean(brokenGalleryIds[item.id]);
+                    return (
+                      <figure
+                        key={item.id}
+                        className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setLightboxIndex(idx)}
+                          className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
+                          aria-label={`Perbesar foto ${item.title}`}
+                        >
+                          {!isBroken ? (
+                            <img
+                              src={item.src}
+                              alt={item.alt}
+                              referrerPolicy="no-referrer"
+                              loading="lazy"
+                              onError={() => markGalleryBroken(item.id)}
+                              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-[#E4ECE6] text-[#0E6245]">
+                              <Camera className="w-10 h-10 opacity-50" />
+                            </div>
+                          )}
+                        </button>
+                        <figcaption className="px-5 py-4 text-xs sm:text-sm text-[#42554A]">
+                          <span className="font-semibold text-[#0F2419]">{item.title}</span>
+                          <span aria-hidden="true"> · </span>
+                          <span>{item.caption}</span>
+                        </figcaption>
+                      </figure>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+
+            {/* Ekstrakurikuler, Prestasi & Berita Sekolah (Dikelola oleh Admin) */}
+            {(siteProfile.extracurriculars.length > 0 ||
+              siteProfile.achievements.length > 0 ||
+              siteProfile.news.length > 0) && (
+              <section className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
+                {siteProfile.extracurriculars.length > 0 && (
+                  <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 space-y-5">
+                    <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-[#0E6245]">
+                      <Sparkles className="w-4 h-4" />
+                      <span>Kegiatan Ekstrakurikuler SDIT Insan Cendekia</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {siteProfile.extracurriculars.map((eks) => (
+                        <div key={eks.id} className="space-y-1.5 border-t border-[#E6ECE7] pt-4">
+                          {eks.subtitle && (
+                            <div className="text-xs font-medium text-[#0E6245]">
+                              {eks.subtitle}
+                            </div>
+                          )}
+                          <h3 className="font-display text-base font-semibold text-[#0F2419]">
+                            {eks.title}
+                          </h3>
+                          <p className="text-sm text-[#4A5D52] leading-relaxed">
+                            {eks.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(siteProfile.achievements.length > 0 || siteProfile.news.length > 0) && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {siteProfile.achievements.length > 0 && (
+                      <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 space-y-4">
+                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-[#0E6245]">
+                          <Award className="w-4 h-4" />
+                          <span>Prestasi Siswa</span>
+                        </div>
+                        <div className="divide-y divide-[#E6ECE7]">
+                          {siteProfile.achievements.map((pres) => (
+                            <div key={pres.id} className="py-3.5 first:pt-1 last:pb-1 space-y-1">
+                              <div className="text-xs text-[#5A6D62]">
+                                {[pres.subtitle, pres.date].filter(Boolean).join(' · ')}
+                              </div>
+                              <h3 className="font-display text-base font-semibold text-[#0F2419]">
+                                {pres.title}
+                              </h3>
+                              {pres.description && (
+                                <p className="text-sm text-[#4A5D52] leading-relaxed">
+                                  {pres.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {siteProfile.news.length > 0 && (
+                      <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 space-y-4">
+                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-[#0E6245]">
+                          <Newspaper className="w-4 h-4" />
+                          <span>Berita &amp; Pengumuman Sekolah</span>
+                        </div>
+                        <div className="divide-y divide-[#E6ECE7]">
+                          {siteProfile.news.map((n) => (
+                            <div key={n.id} className="py-3.5 first:pt-1 last:pb-1 space-y-1">
+                              {n.date && (
+                                <div className="font-mono text-xs text-[#5A6D62] tabular-nums">
+                                  {n.date}
+                                </div>
+                              )}
+                              <h3 className="font-display text-base font-semibold text-[#0F2419]">
+                                {n.title}
+                              </h3>
+                              {n.description && (
+                                <p className="text-sm text-[#4A5D52] leading-relaxed">
+                                  {n.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
             )}
 
-            {/* Measured contrast scrim */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-t from-[#081A12]/92 via-[#0A2016]/78 to-[#0A2016]/35 lg:bg-gradient-to-r lg:from-[#081A12]/92 lg:via-[#0A2016]/72 lg:to-transparent"
-            />
+            {/* Dokumentasi Kegiatan Nyata Siswa */}
+            <section id="galeri" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                  <div className="space-y-1.5 max-w-2xl">
+                    <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
+                      Dokumentasi Kegiatan Nyata Siswa
+                    </p>
+                    <h2
+                      className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
+                      style={{ textWrap: 'balance' }}
+                    >
+                      Aktivitas Belajar &amp; Pembiasaan Anak di SDIT Insan Cendekia Kalibaru
+                    </h2>
+                    <p className="text-sm text-[#4A5D52] leading-relaxed">
+                      Cuplikan dokumentasi asli kegiatan ibadah, proyek kreatif, literasi kelas, dan pembiasaan hidup bersih peserta didik. Ketuk foto untuk melihat tampilan penuh.
+                    </p>
+                  </div>
+                  <a
+                    href="https://www.youtube.com/channel/UCtOE7_iytj8rGlIZ3UTHnjA"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 text-xs font-semibold text-[#0E6245] bg-white border border-[#DCE4DE] rounded-lg hover:bg-[#F2F6F3] transition-colors whitespace-nowrap shrink-0 self-start md:self-auto"
+                  >
+                    <span>Kanal Resmi Sekolah</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
 
-            <div className="relative z-10 w-full p-5 sm:p-10 lg:p-14 max-w-3xl space-y-4 sm:space-y-5">
-              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm font-medium text-[#CDE2D5]">
-                <span>SD Islam Terpadu Insan Cendekia</span>
-                <span aria-hidden="true">·</span>
-                <span>Kec. Kalibaru, Banyuwangi</span>
-                <span aria-hidden="true">·</span>
-                <span className="font-mono tabular-nums">NPSN 20573193</span>
-                <span aria-hidden="true">·</span>
-                <span>Akreditasi A</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                  {allGalleryItems.map((item, idx) => {
+                    const isBroken = Boolean(brokenGalleryIds[item.id]);
+                    return (
+                      <article
+                        key={item.id}
+                        className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setLightboxIndex(idx)}
+                          className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
+                          aria-label={`Lihat foto ${item.title} ukuran penuh`}
+                        >
+                          {!isBroken ? (
+                            <img
+                              src={item.src}
+                              alt={item.alt}
+                              referrerPolicy="no-referrer"
+                              loading="lazy"
+                              onError={() => markGalleryBroken(item.id)}
+                              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#E4ECE6] text-[#0E6245] px-4 text-center">
+                              <Camera className="w-8 h-8 opacity-50" />
+                              <span className="text-xs font-medium">{item.title}</span>
+                            </div>
+                          )}
+                        </button>
+                        <div className="p-4 sm:p-5 flex-1 flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2 text-xs font-medium text-[#5A6D62]">
+                            <span className="text-[#0E6245]">{item.category}</span>
+                            <span aria-hidden="true">·</span>
+                            <span>{item.context}</span>
+                          </div>
+                          <h3 className="font-display text-base font-semibold text-[#0F2419] leading-snug">
+                            {item.title}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#4A5D52] leading-relaxed">
+                            {item.caption}
+                          </p>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
               </div>
+            </section>
 
-              <h1
-                className="font-display font-bold tracking-tight text-white leading-[1.15]"
-                style={{ fontSize: 'clamp(1.75rem, 4vw, 3.35rem)', textWrap: 'balance' }}
-              >
-                Penerimaan Murid Baru Tahun Ajaran 2026/2027
-              </h1>
+            {/* Alur Pendaftaran Ringkas */}
+            <section id="alur" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-10 sm:py-12">
+              <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 pb-4 border-b border-[#E6ECE7]">
+                  <div>
+                    <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-[#0F2419]">
+                      Alur &amp; Persyaratan 5 Berkas SPMB
+                    </h2>
+                    <p className="mt-1 text-sm text-[#4A5D52]">
+                      Siapkan 5 berkas digital dan biaya pendaftaran resmi Rp 50.000,- (tanpa biaya seragam maupun biaya tambahan lain).
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-2 text-xs font-medium text-[#0E6245] shrink-0">
+                    <FileCheck2 className="w-4 h-4 shrink-0" />
+                    <span>KK · Akta · Foto 3×4 · KTP Ortu · Bukti Bayar</span>
+                  </div>
+                </div>
 
-              <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-2xl">
-                Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendekia Kalibaru mendampingi peserta didik bertumbuh melalui pembinaan ibadah dan cinta Al-Qur’an, pembelajaran yang menyenangkan dan prestatif, serta pembiasaan hidup bersih dan disiplin.
-              </p>
-
-              <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
-                <button
-                  type="button"
-                  onClick={() => scrollToPortal('daftar')}
-                  className="inline-flex items-center justify-center min-h-[46px] px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] border border-[#197B59] rounded-lg hover:bg-[#127855] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  Isi Formulir Pendaftaran
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollToPortal('status')}
-                  className="inline-flex items-center justify-center min-h-[46px] px-5 py-3 text-sm font-medium text-white bg-white/10 border border-white/25 rounded-lg hover:bg-white/20 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  Cek Status Pendaftaran
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Visi & Misi SDIT Insan Cendekia */}
-        <section id="visi-misi" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pb-12">
-          <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            <div className="lg:col-span-5 space-y-3">
-              <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
-                Visi SDIT Insan Cendekia
-              </p>
-              <h2
-                className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#0F2419] leading-snug"
-                style={{ textWrap: 'balance' }}
-              >
-                “Sholih, Cerdas, Mandiri.”
-              </h2>
-              <p className="text-sm text-[#4A5D52] leading-relaxed">
-                Pendidikan di SDIT Insan Cendekia Kalibaru diarahkan untuk mendampingi peserta didik mengembangkan ibadah, akhlak mulia, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian dalam kehidupan sehari-hari.
-              </p>
-            </div>
-
-            <div className="lg:col-span-7 space-y-3">
-              <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
-                Misi Sekolah
-              </p>
-              <ol className="divide-y divide-[#E6ECE7] border-y border-[#E6ECE7]">
-                <li className="py-3.5 flex items-start gap-3.5">
-                  <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
-                    01.
-                  </span>
-                  <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
-                    Membekali peserta didik taat beribadah, berakhlak mulia, dan cinta Al-Qur’an.
-                  </span>
-                </li>
-                <li className="py-3.5 flex items-start gap-3.5">
-                  <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
-                    02.
-                  </span>
-                  <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
-                    Mengembangkan proses pembelajaran yang menyenangkan dan prestatif (IQ dan EQ).
-                  </span>
-                </li>
-                <li className="py-3.5 flex items-start gap-3.5">
-                  <span className="font-mono text-xs font-semibold text-[#0E6245] pt-0.5 shrink-0 tabular-nums">
-                    03.
-                  </span>
-                  <span className="text-sm sm:text-base text-[#1D3126] leading-relaxed">
-                    Membiasakan hidup bersih dan disiplin (AQ).
-                  </span>
-                </li>
-              </ol>
-            </div>
-          </div>
-        </section>
-
-        {/* Tentang Sekolah & Fokus Pendidikan */}
-        <section id="program" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
-            <div className="lg:col-span-6 flex flex-col justify-between space-y-8">
-              <div className="space-y-3.5">
-                <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
-                  Profil Sekolah
-                </p>
-                <h2
-                  className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
-                  style={{ textWrap: 'balance' }}
-                >
-                  Tentang SDIT Insan Cendekia Kalibaru
-                </h2>
-                <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
-                  SDIT Insan Cendekia Kalibaru adalah sekolah dasar Islam terpadu di Kalibaru Kulon, Kabupaten Banyuwangi, yang berada di bawah naungan Yayasan Bina Insan Mulia Kalibaru. Pendidikan di sekolah ini berlandaskan visi “Sholih, Cerdas, Mandiri” dan diarahkan untuk mendampingi peserta didik dalam mengembangkan ibadah, akhlak, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian.
-                </p>
-                <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
-                  Arah pendidikan tersebut diwujudkan melalui pembelajaran yang menyenangkan dan mendorong prestasi, disertai pembiasaan hidup bersih dan disiplin. Sekolah berupaya menghadirkan proses belajar yang membantu peserta didik tumbuh dengan nilai-nilai Islami dan bekal untuk menjalani kehidupan sehari-hari.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="font-display text-lg font-semibold text-[#0F2419]">
-                  Fokus Pendidikan
-                </h3>
-                <div className="divide-y divide-[#E1E8E2] border-y border-[#E1E8E2]">
-                  {FOKUS_PENDIDIKAN.map((item) => (
-                    <div key={item.number} className="py-4 first:pt-4 last:pb-4 space-y-1">
-                      <h4 className="font-display text-base font-semibold text-[#0F2419]">
-                        <span className="font-mono text-sm text-[#0E6245] mr-2 tabular-nums">
-                          {item.number}
-                        </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-1">
+                  {ADMISSION_STEPS.map((item) => (
+                    <div key={item.step} className="space-y-2">
+                      <div className="font-mono text-xs font-semibold text-[#0E6245] tabular-nums">
+                        Langkah {item.step}
+                      </div>
+                      <h3 className="font-display text-base font-semibold text-[#0F2419]">
                         {item.title}
-                      </h4>
-                      <p className="text-sm text-[#4A5D52] leading-relaxed pl-0 sm:pl-7">
-                        {item.description}
+                      </h3>
+                      <p className="text-sm text-[#4A5D52] leading-relaxed">
+                        {item.detail}
                       </p>
                     </div>
                   ))}
                 </div>
+
+                <div className="pt-4 border-t border-[#E6ECE7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#4A5D52]">
+                  <span>Butuh bantuan saat pengisian formulir atau konfirmasi pembayaran?</span>
+                  <span className="font-medium text-[#0F2419]">
+                    Hubungi Sekolah:{' '}
+                    <a href="tel:0333897694" className="font-mono text-[#0E6245] hover:underline tabular-nums">
+                      (0333) 897694
+                    </a>
+                    <span aria-hidden="true"> · </span>
+                    <a href="mailto:sditic08@gmail.com" className="text-[#0E6245] hover:underline">
+                      sditic08@gmail.com
+                    </a>
+                  </span>
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
-              {[0, 1].map((idx) => {
-                const item = GALERI_KEGIATAN[idx];
-                const isBroken = Boolean(brokenGalleryIds[item.id]);
-                return (
-                  <figure
-                    key={item.id}
-                    className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setLightboxIndex(idx)}
-                      className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
-                      aria-label={`Perbesar foto ${item.title}`}
-                    >
-                      {!isBroken ? (
-                        <img
-                          src={item.src}
-                          alt={item.alt}
-                          referrerPolicy="no-referrer"
-                          loading="lazy"
-                          onError={() => markGalleryBroken(item.id)}
-                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-[#E4ECE6] text-[#0E6245]">
-                          <Camera className="w-10 h-10 opacity-50" />
-                        </div>
-                      )}
-                    </button>
-                    <figcaption className="px-5 py-4 text-xs sm:text-sm text-[#42554A]">
-                      <span className="font-semibold text-[#0F2419]">{item.title}</span>
-                      <span aria-hidden="true"> · </span>
-                      <span>{item.caption}</span>
-                    </figcaption>
-                  </figure>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* Dokumentasi Kegiatan Nyata Siswa */}
-        <section id="galeri" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-              <div className="space-y-1.5 max-w-2xl">
-                <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
-                  Dokumentasi Kegiatan Nyata Siswa
-                </p>
-                <h2
-                  className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
-                  style={{ textWrap: 'balance' }}
-                >
-                  Aktivitas Belajar &amp; Pembiasaan Anak di SDIT Insan Cendekia Kalibaru
-                </h2>
-                <p className="text-sm text-[#4A5D52] leading-relaxed">
-                  Cuplikan dokumentasi asli kegiatan ibadah, proyek kreatif, literasi kelas, dan pembiasaan hidup bersih peserta didik. Ketuk foto untuk melihat tampilan penuh.
-                </p>
-              </div>
-              <a
-                href="https://www.youtube.com/channel/UCtOE7_iytj8rGlIZ3UTHnjA"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 text-xs font-semibold text-[#0E6245] bg-white border border-[#DCE4DE] rounded-lg hover:bg-[#F2F6F3] transition-colors whitespace-nowrap shrink-0 self-start md:self-auto"
-              >
-                <span>Kanal Resmi Sekolah</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {GALERI_KEGIATAN.map((item, idx) => {
-                const isBroken = Boolean(brokenGalleryIds[item.id]);
-                return (
-                  <article
-                    key={item.id}
-                    className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setLightboxIndex(idx)}
-                      className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
-                      aria-label={`Lihat foto ${item.title} ukuran penuh`}
-                    >
-                      {!isBroken ? (
-                        <img
-                          src={item.src}
-                          alt={item.alt}
-                          referrerPolicy="no-referrer"
-                          loading="lazy"
-                          onError={() => markGalleryBroken(item.id)}
-                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#E4ECE6] text-[#0E6245] px-4 text-center">
-                          <Camera className="w-8 h-8 opacity-50" />
-                          <span className="text-xs font-medium">{item.title}</span>
-                        </div>
-                      )}
-                    </button>
-                    <div className="p-4 sm:p-5 flex-1 flex flex-col gap-1.5">
-                      <div className="flex items-center gap-2 text-xs font-medium text-[#5A6D62]">
-                        <span className="text-[#0E6245]">{item.category}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{item.context}</span>
-                      </div>
-                      <h3 className="font-display text-base font-semibold text-[#0F2419] leading-snug">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-[#4A5D52] leading-relaxed">
-                        {item.caption}
-                      </p>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* Alur Pendaftaran Ringkas */}
-        <section id="alur" className="max-w-[1200px] mx-auto px-4 sm:px-6 py-10 sm:py-12">
-          <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 pb-4 border-b border-[#E6ECE7]">
-              <div>
-                <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-[#0F2419]">
-                  Alur & Persyaratan Berkas SPMB
-                </h2>
-                <p className="mt-1 text-sm text-[#4A5D52]">
-                  Siapkan tiga berkas digital. Foto dari kamera HP otomatis disesuaikan agar di bawah 900 KB per berkas.
-                </p>
-              </div>
-              <div className="inline-flex items-center gap-2 text-xs font-medium text-[#0E6245] shrink-0">
-                <FileCheck2 className="w-4 h-4" />
-                <span>KK · Akta Kelahiran · Pas Foto 4 × 6</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-1">
-              {ADMISSION_STEPS.map((item) => (
-                <div key={item.step} className="space-y-2">
-                  <div className="font-mono text-xs font-semibold text-[#0E6245] tabular-nums">
-                    Langkah {item.step}
-                  </div>
-                  <h3 className="font-display text-base font-semibold text-[#0F2419]">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-[#4A5D52] leading-relaxed">
-                    {item.detail}
+            {/* Portal Formulir & Cek Status */}
+            <section id="portal-spmb" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-6 pb-20 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div className="space-y-1">
+                  <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]">
+                    Portal Pendaftaran &amp; Cek Status
+                  </h2>
+                  <p className="text-sm text-[#4A5D52]">
+                    Data pendaftar dan berkas tersimpan terpusat pada database panitia SPMB SDIT Insan Cendekia Kalibaru.
                   </p>
                 </div>
-              ))}
-            </div>
 
-            <div className="pt-4 border-t border-[#E6ECE7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#4A5D52]">
-              <span>Butuh bantuan saat pengisian formulir atau pengunggahan berkas?</span>
-              <span className="font-medium text-[#0F2419]">
-                Hubungi Sekolah:{' '}
-                <a href="tel:0333897694" className="font-mono text-[#0E6245] hover:underline tabular-nums">
-                  (0333) 897694
-                </a>
-                <span aria-hidden="true"> · </span>
-                <a href="mailto:sditic08@gmail.com" className="text-[#0E6245] hover:underline">
-                  sditic08@gmail.com
-                </a>
-              </span>
-            </div>
-          </div>
-        </section>
+                {/* Interactive Segmented Tab Control */}
+                <div
+                  role="tablist"
+                  aria-label="Layanan Portal SPMB"
+                  className="no-print grid grid-cols-2 sm:inline-flex items-center p-1 bg-[#E6ECE7] rounded-lg w-full sm:w-auto"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === 'daftar'}
+                    onClick={() => setActiveTab('daftar')}
+                    className={`min-h-[42px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center justify-center ${
+                      activeTab === 'daftar'
+                        ? 'bg-white text-[#0F2419] shadow-xs'
+                        : 'text-[#4A5D52] hover:text-[#0F2419]'
+                    }`}
+                  >
+                    Formulir Pendaftaran
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === 'status'}
+                    onClick={() => setActiveTab('status')}
+                    className={`min-h-[42px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center justify-center ${
+                      activeTab === 'status'
+                        ? 'bg-white text-[#0F2419] shadow-xs'
+                        : 'text-[#4A5D52] hover:text-[#0F2419]'
+                    }`}
+                  >
+                    Cek Status
+                  </button>
+                </div>
+              </div>
 
-        {/* Portal Formulir & Cek Status */}
-        <section id="portal-spmb" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-6 pb-20 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div className="space-y-1">
-              <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]">
-                Portal Pendaftaran & Cek Status
-              </h2>
-              <p className="text-sm text-[#4A5D52]">
-                Data pendaftar dan berkas tersimpan terpusat pada database panitia SPMB SDIT Insan Cendekia Kalibaru.
-              </p>
-            </div>
-
-            {/* Interactive Segmented Tab Control */}
-            <div
-              role="tablist"
-              aria-label="Layanan Portal SPMB"
-              className="no-print grid grid-cols-2 sm:inline-flex items-center p-1 bg-[#E6ECE7] rounded-lg w-full sm:w-auto"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === 'daftar'}
-                onClick={() => setActiveTab('daftar')}
-                className={`min-h-[42px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center justify-center ${
-                  activeTab === 'daftar'
-                    ? 'bg-white text-[#0F2419] shadow-xs'
-                    : 'text-[#4A5D52] hover:text-[#0F2419]'
-                }`}
-              >
-                Formulir Pendaftaran
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === 'status'}
-                onClick={() => setActiveTab('status')}
-                className={`min-h-[42px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center justify-center ${
-                  activeTab === 'status'
-                    ? 'bg-white text-[#0F2419] shadow-xs'
-                    : 'text-[#4A5D52] hover:text-[#0F2419]'
-                }`}
-              >
-                Cek Status
-              </button>
-            </div>
-          </div>
-
-          {activeTab === 'daftar' ? (
-            <RegistrationForm onGoToStatusCheck={handleGoToStatusCheck} />
-          ) : (
-            <StatusCheckPanel
-              initialNoPendaftaran={prefillRegNo}
-              initialNoTelepon={prefillPhone}
-            />
-          )}
-        </section>
+              {activeTab === 'daftar' ? (
+                <RegistrationForm
+                  onGoToStatusCheck={handleGoToStatusCheck}
+                  activeWave={siteProfile.activeWave}
+                  waGroupTitle={siteProfile.waGroupTitle}
+                  waGroupUrl={siteProfile.waGroupUrl}
+                />
+              ) : (
+                <StatusCheckPanel
+                  initialNoPendaftaran={prefillRegNo}
+                  initialNoTelepon={prefillPhone}
+                  waGroupTitle={siteProfile.waGroupTitle}
+                  waGroupUrl={siteProfile.waGroupUrl}
+                />
+              )}
+            </section>
           </>
         )}
       </main>
@@ -853,13 +988,13 @@ export default function App() {
               </p>
               <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
                 <span className="font-mono text-xs text-[#5A6D62] tabular-nums mr-1">
-                  {lightboxIndex + 1} / {GALERI_KEGIATAN.length}
+                  {lightboxIndex + 1} / {allGalleryItems.length}
                 </span>
                 <button
                   type="button"
                   onClick={() =>
                     setLightboxIndex(
-                      (lightboxIndex - 1 + GALERI_KEGIATAN.length) % GALERI_KEGIATAN.length
+                      (lightboxIndex - 1 + allGalleryItems.length) % allGalleryItems.length
                     )
                   }
                   aria-label="Foto sebelumnya"
@@ -870,7 +1005,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() =>
-                    setLightboxIndex((lightboxIndex + 1) % GALERI_KEGIATAN.length)
+                    setLightboxIndex((lightboxIndex + 1) % allGalleryItems.length)
                   }
                   aria-label="Foto berikutnya"
                   className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center border border-[#DCE4DE] rounded-lg text-[#0F2419] hover:bg-[#F2F6F3] transition-colors cursor-pointer"

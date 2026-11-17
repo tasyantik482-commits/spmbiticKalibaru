@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Download, Printer, X } from 'lucide-react';
 import type { AdminApplicantRecord } from '../types/spmb';
-import { toDriveThumbnailUrl, triggerFileDownload } from '../services/spmbService';
+import {
+  formatRupiah,
+  toDriveThumbnailUrl,
+  triggerFileDownload,
+} from '../services/spmbService';
 import schoolLogoImg from '../assets/images/logo_sdit_ic_kalibaru.png';
 
 interface PrintableRegistrationCardProps {
@@ -19,10 +23,19 @@ export default function PrintableRegistrationCard({
     setPhotoError(false);
     if (!applicant) return;
     document.body.classList.add('printing-receipt');
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.classList.remove('printing-receipt');
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [applicant]);
+  }, [applicant, onClose]);
 
   if (!applicant) return null;
 
@@ -44,38 +57,66 @@ export default function PrintableRegistrationCard({
   const photoPreviewSrc = toDriveThumbnailUrl(applicant.urlPasFoto);
   const canShowPhoto = Boolean(photoPreviewSrc) && !photoError;
 
+  const alamatRingkas = [
+    applicant.alamatSaatIni,
+    applicant.rtRw ? `RT/RW ${applicant.rtRw}` : '',
+    applicant.desaKelurahan,
+    applicant.kecamatan ? `Kec. ${applicant.kecamatan}` : '',
+    applicant.kabupatenKota,
+    applicant.provinsi,
+  ]
+    .filter((v) => v && v !== '-')
+    .join(', ');
+
+  const observasiText =
+    applicant.tanggalObservasi || applicant.waktuObservasi
+      ? [
+          applicant.tanggalObservasi ? formatTanggal(applicant.tanggalObservasi) : '',
+          applicant.waktuObservasi || '',
+        ]
+          .filter(Boolean)
+          .join(' · ')
+      : 'Menunggu penjadwalan panitia';
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 p-3 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="printable-proof-title"
+      onClick={onClose}
     >
-      <div className="w-full max-w-3xl bg-white border border-[#DCE4DE] rounded-xl shadow-xl overflow-hidden my-6">
-        {/* Toolbar Modal (tidak ikut tercetak) */}
-        <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-b border-[#E6ECE7] bg-[#F7FAF8]">
-          <div className="flex items-start justify-between gap-3">
-            <div>
+      <div
+        className="w-full max-w-3xl bg-white border border-[#DCE4DE] rounded-xl shadow-2xl overflow-hidden my-3 sm:my-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Sticky Toolbar Modal (tidak ikut tercetak) — Dilengkapi tombol Tutup yang jelas */}
+        <div className="no-print sticky top-0 z-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-3.5 border-b border-[#DCE4DE] bg-[#F7FAF8]">
+          <div className="flex items-start justify-between gap-3 min-w-0">
+            <div className="min-w-0">
               <h2
                 id="printable-proof-title"
-                className="font-display text-sm sm:text-base font-semibold text-[#0F2419]"
+                className="font-display text-sm sm:text-base font-semibold text-[#0F2419] truncate"
               >
                 Pratinjau Cetak Bukti Pendaftaran / Daftar Ulang
               </h2>
               <p className="text-xs text-[#5A6D62]">
-                Nomor Pendaftaran: <span className="font-mono">{applicant.noPendaftaran}</span>
+                No. Pendaftaran: <span className="font-mono">{applicant.noPendaftaran}</span>
+                <span aria-hidden="true"> · </span>
+                <span>{applicant.gelombang || 'Gelombang 1'}</span>
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="Tutup pratinjau cetak"
-              className="sm:hidden min-h-[40px] min-w-[40px] flex items-center justify-center text-[#5A6D62] hover:text-[#0F2419] rounded-lg cursor-pointer"
+              className="sm:hidden inline-flex items-center gap-1 min-h-[40px] px-3 py-1.5 text-xs font-semibold text-[#991B1B] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] shrink-0 cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
+              <span>Tutup</span>
             </button>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {applicant.downloadKartuKeluarga && (
               <button
                 type="button"
@@ -103,9 +144,10 @@ export default function PrintableRegistrationCard({
               type="button"
               onClick={onClose}
               aria-label="Tutup pratinjau cetak"
-              className="hidden sm:flex min-h-[40px] min-w-[40px] items-center justify-center text-[#5A6D62] hover:text-[#0F2419] rounded-lg cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 text-xs font-semibold text-[#991B1B] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] transition-colors cursor-pointer whitespace-nowrap"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
+              <span>Tutup</span>
             </button>
           </div>
         </div>
@@ -141,7 +183,7 @@ export default function PrintableRegistrationCard({
             </div>
             <div className="sm:text-right shrink-0">
               <div className="text-[11px] font-medium text-[#5A6D62]">
-                Dokumen Resmi Panitia SPMB
+                Dokumen Resmi Panitia SPMB · {applicant.gelombang || 'Gelombang 1'}
               </div>
               <div className="mt-1 font-mono text-base font-bold text-[#0F2419] tabular-nums border border-[#0F2419] px-3 py-1.5 rounded">
                 {applicant.noPendaftaran}
@@ -151,14 +193,14 @@ export default function PrintableRegistrationCard({
 
           <div className="text-center space-y-0.5">
             <h4 className="font-display text-base font-bold uppercase tracking-wide text-[#0F2419]">
-              Bukti Pendaftaran & Kartu Daftar Ulang SPMB 2026/2027
+              Bukti Pendaftaran &amp; Kartu Daftar Ulang SPMB 2026/2027
             </h4>
             <p className="text-xs text-[#5A6D62]">
-              Tanggal Pendaftaran: {formatTanggal(applicant.waktuDaftar)}
+              Tanggal Pendaftaran: {formatTanggal(applicant.waktuDaftar)} · {applicant.gelombang || 'Gelombang 1'}
             </p>
           </div>
 
-          {/* Data Pendaftar + Slot Pas Foto 4x6 */}
+          {/* Data Pendaftar + Slot Pas Foto 3x4 */}
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
             <div className="sm:col-span-9">
               <table className="w-full text-sm border-collapse">
@@ -168,7 +210,7 @@ export default function PrintableRegistrationCard({
                       Nomor Pendaftaran
                     </td>
                     <td className="py-2 font-mono font-semibold text-[#0F2419] tabular-nums">
-                      {applicant.noPendaftaran}
+                      {applicant.noPendaftaran} ({applicant.gelombang || 'Gelombang 1'})
                     </td>
                   </tr>
                   <tr>
@@ -177,13 +219,41 @@ export default function PrintableRegistrationCard({
                     </td>
                     <td className="py-2 font-semibold text-[#0F2419]">
                       {applicant.namaCalonMurid}
+                      {applicant.namaPanggilan && applicant.namaPanggilan !== '-'
+                        ? ` (${applicant.namaPanggilan})`
+                        : ''}
+                    </td>
+                  </tr>
+                  {applicant.nikCalonMurid && (
+                    <tr>
+                      <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
+                        NIK Calon Murid
+                      </td>
+                      <td className="py-2 font-mono tabular-nums text-[#0F2419]">
+                        {applicant.nikCalonMurid}
+                      </td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
+                      Tempat, Tanggal Lahir / JK
+                    </td>
+                    <td className="py-2 text-[#0F2419]">
+                      {applicant.tempatLahir && applicant.tempatLahir !== '-'
+                        ? `${applicant.tempatLahir}, `
+                        : ''}
+                      {applicant.tanggalLahir || '-'} · {applicant.jenisKelamin || '-'}
                     </td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
-                      Nama Orang Tua / Wali
+                      Orang Tua / Wali
                     </td>
-                    <td className="py-2 text-[#0F2419]">{applicant.namaOrangTua}</td>
+                    <td className="py-2 text-[#0F2419]">
+                      {applicant.namaAyah || applicant.namaIbu
+                        ? `Ayah: ${applicant.namaAyah || '-'} · Ibu: ${applicant.namaIbu || '-'}`
+                        : applicant.namaOrangTua}
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
@@ -193,27 +263,50 @@ export default function PrintableRegistrationCard({
                       {applicant.noTelepon}
                     </td>
                   </tr>
+                  {alamatRingkas && (
+                    <tr>
+                      <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
+                        Alamat Tempat Tinggal
+                      </td>
+                      <td className="py-2 text-xs sm:text-sm text-[#0F2419]">{alamatRingkas}</td>
+                    </tr>
+                  )}
                   <tr>
                     <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
-                      Jenis Kelamin / Tgl Lahir
-                    </td>
-                    <td className="py-2 text-[#0F2419]">
-                      {applicant.jenisKelamin || '-'} · {applicant.tanggalLahir || '-'}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
-                      Asal TK / PAUD
+                      Asal TK / PAUD / RA
                     </td>
                     <td className="py-2 text-[#0F2419]">{applicant.asalTkPaud || '-'}</td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
-                      Data Fisik (TB / BB / LK)
+                      Data Fisik (TB / BB)
                     </td>
                     <td className="py-2 font-mono text-xs sm:text-sm tabular-nums text-[#0F2419]">
-                      {applicant.tinggiBadan} cm · {applicant.beratBadan} kg · {applicant.lingkarKepala} cm
+                      {applicant.tinggiBadan} cm · {applicant.beratBadan} kg
+                      {applicant.lingkarKepala ? ` · LK ${applicant.lingkarKepala} cm` : ''}
                     </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
+                      Pembayaran Pendaftaran
+                    </td>
+                    <td className="py-2 text-[#0F2419]">
+                      {applicant.metodePembayaran
+                        ? `${applicant.metodePembayaran} · ${formatRupiah(
+                            applicant.nominalPembayaran || 50000
+                          )}${
+                            applicant.namaPengirimPembayaran
+                              ? ` (${applicant.namaPengirimPembayaran})`
+                              : ''
+                          }`
+                        : '-'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
+                      Jadwal Observasi
+                    </td>
+                    <td className="py-2 font-semibold text-[#0F2419]">{observasiText}</td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62]">
@@ -240,23 +333,29 @@ export default function PrintableRegistrationCard({
                 ) : (
                   <div className="text-center px-2 text-[11px] text-[#5A6D62]">
                     Pas Foto
-                    <br />4 × 6 cm
+                    <br />3 × 4 cm
                   </div>
                 )}
               </div>
-              <span className="mt-1.5 text-[11px] text-[#5A6D62]">Pas Foto 4 × 6</span>
+              <span className="mt-1.5 text-[11px] text-[#5A6D62]">Pas Foto 3 × 4</span>
             </div>
           </div>
 
           {/* Checklist Berkas & Daftar Ulang */}
           <div className="border border-[#DCE4DE] rounded-lg p-4 bg-[#FAFBF9] space-y-2 text-xs">
             <div className="font-semibold text-[#0F2419]">
-              Kelengkapan Berkas & Catatan Daftar Ulang
+              Kelengkapan 5 Berkas Wajib &amp; Catatan Daftar Ulang
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[#2D4035]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-[#2D4035]">
               <div>[✓] Kartu Keluarga (KK) Terlampir</div>
               <div>[✓] Akta Kelahiran Terlampir</div>
-              <div>[✓] Pas Foto 4 × 6 Terlampir</div>
+              <div>[✓] Pas Foto 3 × 4 Terlampir</div>
+              <div>
+                [{applicant.urlKtpOrangTua ? '✓' : ' '}] KTP Orang Tua / Wali
+              </div>
+              <div>
+                [{applicant.urlBuktiPembayaran ? '✓' : ' '}] Bukti Biaya Pendaftaran
+              </div>
             </div>
             {applicant.catatanPanitia && (
               <p className="pt-1 text-[#2D4035]">
@@ -286,6 +385,21 @@ export default function PrintableRegistrationCard({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Footer Bawah Pratinjau (tidak ikut tercetak) */}
+        <div className="no-print flex items-center justify-between px-4 sm:px-6 py-3 border-t border-[#E6ECE7] bg-[#F7FAF8]">
+          <span className="text-xs text-[#5A6D62]">
+            Tekan tombol <strong>Cetak</strong> untuk menyimpan sebagai PDF atau mencetak kartu.
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 min-h-[38px] px-4 py-1.5 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#EFF3F0] cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Tutup Pratinjau</span>
+          </button>
         </div>
       </div>
     </div>

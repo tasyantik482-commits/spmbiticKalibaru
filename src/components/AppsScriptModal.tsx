@@ -168,7 +168,7 @@ export default function AppsScriptModal({
                 <code className="font-mono text-xs">Pendaftar_SPMB</code> dan folder Drive berkas pendaftar.
               </li>
               <li>
-                Klik <strong>Terapkan &gt; Deployment baru &gt; Aplikasi web</strong>, pilih{' '}
+                Klik <strong>Terapkan &gt; Deployment baru &gt; Aplikasi web</strong> (atau <strong>Kelola deployment &gt; Edit (ikon pensil) &gt; Versi baru</strong> bila memperbarui script lama), pilih{' '}
                 <em>Jalankan sebagai: Saya</em> dan <em>Yang memiliki akses: Siapa saja (Anyone)</em>, lalu salin URL <code className="font-mono text-xs">/exec</code>.
               </li>
               <li>
