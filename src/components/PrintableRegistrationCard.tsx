@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Download, Printer, X } from 'lucide-react';
 import type { AdminApplicantRecord } from '../types/spmb';
 import {
@@ -78,16 +79,17 @@ export default function PrintableRegistrationCard({
           .join(' · ')
       : 'Menunggu penjadwalan panitia';
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 p-3 sm:p-4 overflow-y-auto"
+      data-print-portal="true"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 p-3 sm:p-4 overflow-y-auto print:static print:block print:bg-white print:p-0 print:overflow-visible"
       role="dialog"
       aria-modal="true"
       aria-labelledby="printable-proof-title"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl bg-white border border-[#DCE4DE] rounded-xl shadow-2xl overflow-hidden my-3 sm:my-6"
+        className="w-full max-w-3xl bg-white border border-[#DCE4DE] rounded-xl shadow-2xl overflow-hidden my-3 sm:my-6 print:max-w-none print:border-0 print:rounded-none print:shadow-none print:overflow-visible print:my-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky Toolbar Modal (tidak ikut tercetak) — Dilengkapi tombol Tutup yang jelas */}
@@ -152,25 +154,25 @@ export default function PrintableRegistrationCard({
           </div>
         </div>
 
-        {/* Dokumen Resmi yang Dicetak */}
+        {/* Dokumen Resmi yang Dicetak (Ukuran A4 Portrait) */}
         <div
           id="printable-proof-area"
-          className="p-6 sm:p-10 bg-white text-[#111827] space-y-6"
+          className="p-6 sm:p-10 print:p-0 bg-white text-[#111827] space-y-6 print:space-y-4"
         >
           {/* Kop Sekolah */}
-          <div className="border-b-2 border-[#0F2419] pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-3.5">
+          <div className="border-b-2 border-[#0F2419] pb-4 print:pb-3 flex flex-col sm:flex-row print:flex-row sm:items-center print:items-center sm:justify-between print:justify-between gap-4 print:gap-3">
+            <div className="flex items-start sm:items-center print:items-center gap-3.5">
               <img
                 src={schoolLogoImg}
                 alt="Logo SDIT Insan Cendikia Kalibaru"
                 referrerPolicy="no-referrer"
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-contain shrink-0 bg-white"
+                className="w-14 h-14 sm:w-16 sm:h-16 print:w-14 print:h-14 rounded-full object-contain shrink-0 bg-white"
               />
-              <div className="space-y-1">
+              <div className="space-y-1 print:space-y-0.5">
                 <div className="text-xs font-semibold tracking-wide text-[#0E6245]">
                   YAYASAN BINA INSAN MULIA KALIBARU
                 </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#0F2419]">
+                <h3 className="font-display text-lg sm:text-xl print:text-lg font-bold text-[#0F2419]">
                   SD ISLAM TERPADU INSAN CENDIKIA KALIBARU
                 </h3>
                 <p className="text-xs text-[#4A5D52]">
@@ -181,7 +183,7 @@ export default function PrintableRegistrationCard({
                 </p>
               </div>
             </div>
-            <div className="sm:text-right shrink-0">
+            <div className="sm:text-right print:text-right shrink-0">
               <div className="text-[11px] font-medium text-[#5A6D62]">
                 Dokumen Resmi Panitia SPMB · {applicant.gelombang || 'Gelombang 1'}
               </div>
@@ -201,10 +203,10 @@ export default function PrintableRegistrationCard({
           </div>
 
           {/* Data Pendaftar + Slot Pas Foto 3x4 */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
-            <div className="sm:col-span-9">
-              <table className="w-full text-sm border-collapse">
-                <tbody className="divide-y divide-[#E5EAE6]">
+          <div className="grid grid-cols-1 sm:grid-cols-12 print:grid-cols-12 gap-6 print:gap-4 items-start">
+            <div className="sm:col-span-9 print:col-span-9">
+              <table className="w-full text-sm print:text-[13px] border-collapse">
+                <tbody className="divide-y divide-[#E5EAE6] print:[&_td]:py-1.5">
                   <tr>
                     <td className="py-2 pr-4 text-xs font-medium text-[#5A6D62] w-44">
                       Nomor Pendaftaran
@@ -320,7 +322,7 @@ export default function PrintableRegistrationCard({
               </table>
             </div>
 
-            <div className="sm:col-span-3 flex flex-col items-center">
+            <div className="sm:col-span-3 print:col-span-3 flex flex-col items-center">
               <div className="w-[104px] h-[138px] border border-[#9EB0A3] rounded bg-[#F7FAF8] flex items-center justify-center overflow-hidden">
                 {canShowPhoto ? (
                   <img
@@ -342,11 +344,11 @@ export default function PrintableRegistrationCard({
           </div>
 
           {/* Checklist Berkas & Daftar Ulang */}
-          <div className="border border-[#DCE4DE] rounded-lg p-4 bg-[#FAFBF9] space-y-2 text-xs">
+          <div className="border border-[#DCE4DE] rounded-lg p-4 print:p-3 bg-[#FAFBF9] space-y-2 print:space-y-1.5 text-xs print:break-inside-avoid">
             <div className="font-semibold text-[#0F2419]">
               Kelengkapan 5 Berkas Wajib &amp; Catatan Daftar Ulang
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-[#2D4035]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 gap-2 print:gap-1.5 text-[#2D4035]">
               <div>[✓] Kartu Keluarga (KK) Terlampir</div>
               <div>[✓] Akta Kelahiran Terlampir</div>
               <div>[✓] Pas Foto 3 × 4 Terlampir</div>
@@ -366,8 +368,8 @@ export default function PrintableRegistrationCard({
           </div>
 
           {/* Kolom Tanda Tangan Daftar Ulang */}
-          <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-8 text-xs text-center">
-            <div className="space-y-12 sm:space-y-14">
+          <div className="pt-4 print:pt-2 grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-8 text-xs text-center print:break-inside-avoid">
+            <div className="space-y-12 sm:space-y-14 print:space-y-12">
               <div>
                 <div className="text-[#5A6D62]">Orang Tua / Wali Calon Murid</div>
               </div>
@@ -375,7 +377,7 @@ export default function PrintableRegistrationCard({
                 {applicant.namaOrangTua}
               </div>
             </div>
-            <div className="space-y-12 sm:space-y-14">
+            <div className="space-y-12 sm:space-y-14 print:space-y-12">
               <div>
                 <div className="text-[#5A6D62]">Kalibaru, .......................... 2027</div>
                 <div className="font-medium text-[#0F2419]">Panitia SPMB SDIT Insan Cendikia</div>
@@ -404,4 +406,7 @@ export default function PrintableRegistrationCard({
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(modalContent, document.body);
 }

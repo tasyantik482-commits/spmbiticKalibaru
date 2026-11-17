@@ -23,29 +23,62 @@
   font-variant-numeric: tabular-nums;
 }
 
+@page {
+  size: A4 portrait;
+  margin: 10mm 12mm;
+}
+
 @media print {
   .no-print {
     display: none !important;
   }
 
-  body.printing-receipt * {
-    visibility: hidden;
+  html,
+  body.printing-receipt {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    overflow: visible !important;
   }
 
-  body.printing-receipt #printable-proof-area,
-  body.printing-receipt #printable-proof-area * {
-    visibility: visible;
+  body.printing-receipt > *:not([data-print-portal="true"]) {
+    display: none !important;
+  }
+
+  body.printing-receipt [data-print-portal="true"] {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  body.printing-receipt [data-print-portal="true"] > div {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
   }
 
   body.printing-receipt #printable-proof-area {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 16px;
-    margin: 0;
-    background: #ffffff;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
     border: none !important;
     box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
