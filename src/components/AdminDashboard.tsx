@@ -488,14 +488,14 @@ export default function AdminDashboard({
 
     const lines = [
       `Assalamu'alaikum Bapak/Ibu ${item.namaOrangTua},`,
-      `Kami dari Panitia SPMB SDIT Insan Cendekia Kalibaru menyampaikan informasi pendaftaran (${item.gelombang || 'Gelombang 1'}) atas nama *${item.namaCalonMurid}* (No. Pendaftaran: *${item.noPendaftaran}*).`,
+      `Kami dari Panitia SPMB SDIT Insan Cendikia Kalibaru menyampaikan informasi pendaftaran (${item.gelombang || 'Gelombang 1'}) atas nama *${item.namaCalonMurid}* (No. Pendaftaran: *${item.noPendaftaran}*).`,
       `Status saat ini: *${statusText}*`,
     ];
     if (obsDate || obsTime) {
       lines.push(
         `Jadwal Observasi: *${obsDate ? formatTanggal(obsDate) : 'Menyusul'}*${
           obsTime ? ` pukul *${obsTime}*` : ''
-        } di Kampus SDIT Insan Cendekia Kalibaru.`
+        } di Kampus SDIT Insan Cendikia Kalibaru.`
       );
     }
     if (noteText) {

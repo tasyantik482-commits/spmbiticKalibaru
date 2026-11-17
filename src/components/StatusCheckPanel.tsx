@@ -26,7 +26,7 @@ interface StatusCheckPanelProps {
 export default function StatusCheckPanel({
   initialNoPendaftaran = '',
   initialNoTelepon = '',
-  waGroupTitle = 'Grup WA SPMB SDIT INSAN CENDEKIA 27/28',
+  waGroupTitle = 'Grup WA SPMB SDIT INSAN CENDIKIA 27/28',
   waGroupUrl = '',
 }: StatusCheckPanelProps) {
   const [noPendaftaran, setNoPendaftaran] = useState(initialNoPendaftaran);
@@ -106,7 +106,7 @@ export default function StatusCheckPanel({
   const fallbackWaHref = result
     ? buildWhatsAppUrl(
         '085236000000',
-        `Assalamu'alaikum Panitia SPMB SDIT Insan Cendekia Kalibaru, mohon info link undangan *${waGroupTitle}* untuk ananda *${result.namaCalonMurid}* (${result.noPendaftaran}).`
+        `Assalamu'alaikum Panitia SPMB SDIT Insan Cendikia Kalibaru, mohon info link undangan *${waGroupTitle}* untuk ananda *${result.namaCalonMurid}* (${result.noPendaftaran}).`
       )
     : '';
 
@@ -218,7 +218,7 @@ export default function StatusCheckPanel({
                   {result.waktuObservasi ? ` · Pukul ${result.waktuObservasi}` : ''}
                 </div>
                 <p className="text-xs text-[#355242]">
-                  Lokasi: Kampus SDIT Insan Cendekia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).
+                  Lokasi: Kampus SDIT Insan Cendikia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).
                 </p>
               </div>
             </div>

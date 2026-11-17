@@ -120,7 +120,7 @@ const FILE_SLOTS: FileSlotConfig[] = [
 export default function RegistrationForm({
   onGoToStatusCheck,
   activeWave = 'Gelombang 1',
-  waGroupTitle = 'Grup WA SPMB SDIT INSAN CENDEKIA 27/28',
+  waGroupTitle = 'Grup WA SPMB SDIT INSAN CENDIKIA 27/28',
   waGroupUrl = '',
 }: RegistrationFormProps) {
   // Bagian A: Data Calon Murid Baru
@@ -713,8 +713,8 @@ export default function RegistrationForm({
   const handleCopySummary = async () => {
     if (!receipt) return;
     const text = [
-      'BUKTI PENDAFTARAN SPMB 2026/2027',
-      'SDIT Insan Cendekia Kalibaru',
+      'BUKTI PENDAFTARAN SPMB 2027/2028',
+      'SDIT Insan Cendikia Kalibaru',
       `No. Pendaftaran: ${receipt.noPendaftaran}`,
       `Gelombang: ${receipt.gelombang || gelombang}`,
       `Calon Murid: ${receipt.namaCalonMurid}`,
@@ -800,7 +800,7 @@ export default function RegistrationForm({
     const cleanWaGroupUrl = waGroupUrl.trim();
     const fallbackAdminWaUrl = buildWhatsAppUrl(
       '085236000000',
-      `Assalamu'alaikum Panitia SPMB SDIT Insan Cendekia Kalibaru, saya wali dari *${receipt.namaCalonMurid}* (No. Pendaftaran: *${receipt.noPendaftaran}*). Mohon tautan undangan *${waGroupTitle}*.`
+      `Assalamu'alaikum Panitia SPMB SDIT Insan Cendikia Kalibaru, saya wali dari *${receipt.namaCalonMurid}* (No. Pendaftaran: *${receipt.noPendaftaran}*). Mohon tautan undangan *${waGroupTitle}*.`
     );
 
     return (
@@ -875,7 +875,7 @@ export default function RegistrationForm({
             </div>
           </dl>
 
-          {/* Perbaikan #3: Arahkan ke Grup WA SPMB SDIT INSAN CENDEKIA 27/28 */}
+          {/* Perbaikan #3: Arahkan ke Grup WA SPMB SDIT INSAN CENDIKIA 27/28 */}
           <div className="no-print mt-6 rounded-xl border border-[#B9DEC7] bg-[#F2F9F4] p-5 sm:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#0E6245]">
@@ -921,7 +921,7 @@ export default function RegistrationForm({
 
           {receipt.source === 'local_preview' && (
             <div className="mt-6 rounded-lg border border-[#E5D5B5] bg-[#FDF9F0] px-4 py-3 text-xs text-[#7C4A10]">
-              Catatan: Data saat ini tersimpan di pratinjau browser lokal karena <code className="font-mono">VITE_APPS_SCRIPT_URL</code> belum diatur. Untuk menyimpan langsung ke Google Spreadsheet SDIT Insan Cendekia Kalibaru, lengkapi URL Web App Apps Script di Vercel atau melalui menu Pengaturan Apps Script pada <strong>Panel Admin</strong>.
+              Catatan: Data saat ini tersimpan di pratinjau browser lokal karena <code className="font-mono">VITE_APPS_SCRIPT_URL</code> belum diatur. Untuk menyimpan langsung ke Google Spreadsheet SDIT Insan Cendikia Kalibaru, lengkapi URL Web App Apps Script di Vercel atau melalui menu Pengaturan Apps Script pada <strong>Panel Admin</strong>.
             </div>
           )}
 
@@ -1022,7 +1022,7 @@ export default function RegistrationForm({
                         <div className="text-xs text-[#5A6D62]">
                           {opt === activeWave
                             ? 'Gelombang sedang dibuka saat ini'
-                            : 'Pilihan jalur gelombang SPMB 2026/2027'}
+                            : 'Pilihan jalur gelombang SPMB 2027/2028'}
                         </div>
                       </div>
                     </div>
@@ -1987,7 +1987,7 @@ export default function RegistrationForm({
                 <span>1. Di Sekretariat Sekolah</span>
               </div>
               <p className="text-xs text-[#4A5D52] leading-relaxed">
-                Kantor Sekretariat SDIT Insan Cendekia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).
+                Kantor Sekretariat SDIT Insan Cendikia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).
               </p>
               <div className="pt-1 text-xs text-[#1D3126] space-y-0.5 font-mono">
                 <div>Senin–Kamis: 07.00 – 15.00 WIB</div>
@@ -2046,7 +2046,7 @@ export default function RegistrationForm({
               >
                 <img
                   src={QRIS_IMAGE_PATH}
-                  alt="QRIS Pembayaran SPMB SDIT Insan Cendekia Kalibaru (NMID: ID2026566193416)"
+                  alt="QRIS Pembayaran SPMB SDIT Insan Cendikia Kalibaru (NMID: ID2026566193416)"
                   className="w-full h-full object-contain"
                 />
               </button>
@@ -2267,7 +2267,7 @@ export default function RegistrationForm({
               />
               <span className="text-sm leading-relaxed text-[#1D3126]">
                 Saya menyatakan bahwa seluruh data dan 5 berkas yang dilampirkan (termasuk bukti pembayaran biaya pendaftaran) adalah benar, serta memberikan izin kepada pihak{' '}
-                <strong className="font-semibold text-[#0F2419]">SDIT Insan Cendekia Kalibaru</strong>{' '}
+                <strong className="font-semibold text-[#0F2419]">SDIT Insan Cendikia Kalibaru</strong>{' '}
                 untuk menghubungi saya melalui WhatsApp, telepon, atau email terkait proses SPMB.{' '}
                 <span className="text-[#B91C1C]">*</span>
               </span>
@@ -2305,7 +2305,7 @@ export default function RegistrationForm({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Kode QRIS Resmi SDIT Insan Cendekia Kalibaru"
+          aria-label="Kode QRIS Resmi SDIT Insan Cendikia Kalibaru"
           className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4"
           onClick={() => setShowQrisZoom(false)}
         >
@@ -2332,14 +2332,14 @@ export default function RegistrationForm({
             <div className="p-4 bg-[#F7FAF8] flex justify-center">
               <img
                 src={QRIS_IMAGE_PATH}
-                alt="QRIS Pembayaran SPMB SDIT Insan Cendekia Kalibaru (NMID: ID2026566193416)"
+                alt="QRIS Pembayaran SPMB SDIT Insan Cendikia Kalibaru (NMID: ID2026566193416)"
                 className="max-h-[65vh] w-auto object-contain rounded-lg border border-[#DCE4DE] bg-white"
               />
             </div>
             <div className="px-5 py-3 border-t border-[#E6ECE7] flex items-center justify-between gap-2">
               <a
                 href={QRIS_IMAGE_PATH}
-                download="QRIS-SPMB-SDIT-Insan-Cendekia.png"
+                download="QRIS-SPMB-SDIT-Insan-Cendikia.png"
                 className="inline-flex items-center justify-center min-h-[40px] px-4 py-1.5 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg hover:bg-[#E4EFE8]"
               >
                 Simpan Gambar QRIS

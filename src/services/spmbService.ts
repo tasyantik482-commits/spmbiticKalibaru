@@ -607,15 +607,35 @@ export async function deleteRegistration(noPendaftaran: string): Promise<void> {
 
 function mergeSiteProfile(partial?: Partial<SiteProfileConfig> | null): SiteProfileConfig {
   if (!partial) return DEFAULT_SITE_PROFILE;
+
+  const rawWaveNote = (partial.waveInfoNote || '').trim();
+  const waveInfoNote =
+    !rawWaveNote ||
+    rawWaveNote === 'Pendaftaran dibuka dalam 2 gelombang untuk Tahun Ajaran 2026/2027.'
+      ? DEFAULT_SITE_PROFILE.waveInfoNote
+      : rawWaveNote.replace(/Tahun Ajaran 2026\/2027/gi, 'Tahun Pelajaran 2027/2028');
+
+  const rawWaTitle = (partial.waGroupTitle || '').trim();
+  const waGroupTitle =
+    !rawWaTitle || rawWaTitle === 'Grup WA SPMB SDIT INSAN CENDEKIA 27/28'
+      ? DEFAULT_SITE_PROFILE.waGroupTitle
+      : rawWaTitle.replace(/INSAN CENDEKIA/g, 'INSAN CENDIKIA');
+
+  const extracurriculars = Array.isArray(partial.extracurriculars)
+    ? partial.extracurriculars.map((item) =>
+        item.title === 'Pramuka SIT (Pangkalan Insan Cendekia)'
+          ? { ...item, title: 'Pramuka SIT (Pangkalan Insan Cendikia)' }
+          : item
+      )
+    : DEFAULT_SITE_PROFILE.extracurriculars;
+
   return {
     activeWave: partial.activeWave === 'Gelombang 2' ? 'Gelombang 2' : 'Gelombang 1',
-    waveInfoNote: partial.waveInfoNote || DEFAULT_SITE_PROFILE.waveInfoNote,
-    waGroupTitle: partial.waGroupTitle || DEFAULT_SITE_PROFILE.waGroupTitle,
+    waveInfoNote,
+    waGroupTitle,
     waGroupUrl: typeof partial.waGroupUrl === 'string' ? partial.waGroupUrl : DEFAULT_SITE_PROFILE.waGroupUrl,
     programs: Array.isArray(partial.programs) ? partial.programs : DEFAULT_SITE_PROFILE.programs,
-    extracurriculars: Array.isArray(partial.extracurriculars)
-      ? partial.extracurriculars
-      : DEFAULT_SITE_PROFILE.extracurriculars,
+    extracurriculars,
     achievements: Array.isArray(partial.achievements) ? partial.achievements : [],
     news: Array.isArray(partial.news) ? partial.news : [],
     customGallery: Array.isArray(partial.customGallery) ? partial.customGallery : [],

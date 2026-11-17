@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * GOOGLE APPS SCRIPT — PORTAL SPMB SDIT INSAN CENDEKIA KALIBARU (v2.0.0)
+ * GOOGLE APPS SCRIPT — PORTAL SPMB SDIT INSAN CENDIKIA KALIBARU (v2.0.0)
  * ============================================================================
  * Target Spreadsheet ID : 1b9aQUoVH1PSunV63VvaoMUt2S38DlSgYgc--CpqAhsw
  * Fitur Utama:
@@ -327,7 +327,7 @@ function doGet(e) {
               urlKtpOrangTua: String(row[56] || ''),
               urlBuktiPembayaran: String(row[57] || ''),
               statusVerifikasi: row[17] || 'Menunggu Verifikasi',
-              catatanPanitia: row[18] || 'Berkas telah diterima sistem. Panitia SPMB SDIT Insan Cendekia akan melakukan verifikasi dan menghubungi melalui WhatsApp.',
+              catatanPanitia: row[18] || 'Berkas telah diterima sistem. Panitia SPMB SDIT Insan Cendikia akan melakukan verifikasi dan menghubungi melalui WhatsApp.',
               tanggalObservasi: row[62] ? formatShortDate_(row[62]) : '',
               waktuObservasi: String(row[63] || '')
             }
@@ -646,7 +646,7 @@ function doPost(e) {
     const catatanPanitiaDefault =
       'Berkas & bukti pembayaran telah diterima sistem (' +
       gelombang +
-      '). Menunggu verifikasi panitia SPMB SDIT Insan Cendekia.';
+      '). Menunggu verifikasi panitia SPMB SDIT Insan Cendikia.';
 
     const rowData = [
       noPendaftaran,                                      // 0

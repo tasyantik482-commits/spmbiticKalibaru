@@ -2,8 +2,8 @@ import type { SiteProfileConfig } from '../types/spmb';
 
 export const DEFAULT_SITE_PROFILE: SiteProfileConfig = {
   activeWave: 'Gelombang 1',
-  waveInfoNote: 'Pendaftaran dibuka dalam 2 gelombang untuk Tahun Ajaran 2026/2027.',
-  waGroupTitle: 'Grup WA SPMB SDIT INSAN CENDEKIA 27/28',
+  waveInfoNote: 'Pendaftaran dibuka dalam 2 gelombang untuk Tahun Pelajaran 2027/2028.',
+  waGroupTitle: 'Grup WA SPMB SDIT INSAN CENDIKIA 27/28',
   waGroupUrl: '',
   programs: [
     {
@@ -35,7 +35,7 @@ export const DEFAULT_SITE_PROFILE: SiteProfileConfig = {
     },
     {
       id: 'eks-2',
-      title: 'Pramuka SIT (Pangkalan Insan Cendekia)',
+      title: 'Pramuka SIT (Pangkalan Insan Cendikia)',
       subtitle: 'Kemandirian & Kepemimpinan',
       description:
         'Pembentukan karakter tangguh, kemandirian, dan kerja sama tim melalui kegiatan kepanduan.',

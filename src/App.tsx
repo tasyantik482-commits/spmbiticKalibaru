@@ -48,7 +48,7 @@ const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
     context: 'Kegiatan Harian Siswa',
     caption:
       'Peserta didik dibimbing langsung oleh guru melaksanakan sholat berjamaah dengan tertib untuk membangun kedisiplinan ibadah sejak dini.',
-    alt: 'Siswa SDIT Insan Cendekia Kalibaru melaksanakan sholat dhuha berjamaah dibimbing guru',
+    alt: 'Siswa SDIT Insan Cendikia Kalibaru melaksanakan sholat dhuha berjamaah dibimbing guru',
   },
   {
     id: 'kreasi-siswa',
@@ -57,8 +57,8 @@ const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
     category: 'Seni & Kreativitas',
     context: 'Pembelajaran Kelas',
     caption:
-      'Siswi SDIT Insan Cendekia Kalibaru melatih kreativitas dan kerja sama melalui praktik melukis tangan yang menyenangkan di dalam kelas.',
-    alt: 'Empat siswi SDIT Insan Cendekia Kalibaru tersenyum menunjukkan hasil lukis tangan kreatif di kelas',
+      'Siswi SDIT Insan Cendikia Kalibaru melatih kreativitas dan kerja sama melalui praktik melukis tangan yang menyenangkan di dalam kelas.',
+    alt: 'Empat siswi SDIT Insan Cendikia Kalibaru tersenyum menunjukkan hasil lukis tangan kreatif di kelas',
   },
   {
     id: 'proyek-p5',
@@ -68,7 +68,7 @@ const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
     context: 'Kelas 1',
     caption:
       'Siswa kelas 1 berkreasi mengolah bahan plastik bekas menjadi karya hiasan bertema kupu-kupu dan lebah sekaligus menumbuhkan kepedulian lingkungan.',
-    alt: 'Siswa kelas 1 SDIT Insan Cendekia Kalibaru berseragam pramuka menampilkan karya daur ulang plastik',
+    alt: 'Siswa kelas 1 SDIT Insan Cendikia Kalibaru berseragam pramuka menampilkan karya daur ulang plastik',
   },
   {
     id: 'presentasi-kelas',
@@ -78,7 +78,7 @@ const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
     context: 'Kelas Aktif',
     caption:
       'Peserta didik berlatih menyampaikan gagasan dan hasil belajar IPAS serta Bahasa Indonesia secara percaya diri di depan teman-temannya.',
-    alt: 'Siswi SDIT Insan Cendekia Kalibaru mempresentasikan materi pembelajaran IPAS dan Bahasa Indonesia di kelas',
+    alt: 'Siswi SDIT Insan Cendikia Kalibaru mempresentasikan materi pembelajaran IPAS dan Bahasa Indonesia di kelas',
   },
   {
     id: 'karya-kelas4',
@@ -88,7 +88,7 @@ const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
     context: 'Kelas 4',
     caption:
       'Siswa kelas 4 merancang dan mempresentasikan produk kerajinan fungsional hasil kolaborasi kelompok bersama wali kelas.',
-    alt: 'Siswa kelas 4 SDIT Insan Cendekia Kalibaru menampilkan hasil karya kerajinan kreatif di depan kelas',
+    alt: 'Siswa kelas 4 SDIT Insan Cendikia Kalibaru menampilkan hasil karya kerajinan kreatif di depan kelas',
   },
   {
     id: 'kelas-kebersihan',
@@ -98,7 +98,7 @@ const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
     context: 'Kelas 2',
     caption:
       'Pembiasaan hidup bersih dan sehat dikemas melalui nyanyian tematik dan gerak bersama agar mudah dipraktikkan setiap hari.',
-    alt: 'Siswi kelas 2 SDIT Insan Cendekia Kalibaru membawakan lagu edukatif tentang kebersihan di sekolah',
+    alt: 'Siswi kelas 2 SDIT Insan Cendikia Kalibaru membawakan lagu edukatif tentang kebersihan di sekolah',
   },
 ];
 
@@ -119,7 +119,7 @@ const ADMISSION_STEPS = [
     step: '03',
     title: 'Nomor Daftar & Grup WA 27/28',
     detail:
-      'Sistem menerbitkan Nomor Pendaftaran otomatis dan mengarahkan wali murid bergabung ke Grup WA SPMB SDIT INSAN CENDEKIA 27/28.',
+      'Sistem menerbitkan Nomor Pendaftaran otomatis dan mengarahkan wali murid bergabung ke Grup WA SPMB SDIT INSAN CENDIKIA 27/28.',
   },
   {
     step: '04',
@@ -165,7 +165,7 @@ export default function App() {
       category: g.category || 'Kegiatan Sekolah',
       context: g.context || 'Dokumentasi Terbaru',
       caption: g.caption || g.title,
-      alt: `${g.title} — SDIT Insan Cendekia Kalibaru`,
+      alt: `${g.title} — SDIT Insan Cendikia Kalibaru`,
     }));
     return [...GALERI_KEGIATAN_DASAR, ...customMapped];
   }, [siteProfile.customGallery]);
@@ -249,7 +249,7 @@ export default function App() {
             {!logoImgError ? (
               <img
                 src={schoolLogoImg}
-                alt="Logo SDIT Insan Cendekia Kalibaru"
+                alt="Logo SDIT Insan Cendikia Kalibaru"
                 referrerPolicy="no-referrer"
                 onError={() => setLogoImgError(true)}
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-contain shrink-0 bg-white"
@@ -257,7 +257,7 @@ export default function App() {
             ) : (
               <School className="w-6 h-6 text-[#0E6245] shrink-0" />
             )}
-            <span>SDIT Insan Cendekia</span>
+            <span>SDIT Insan Cendikia</span>
           </button>
 
           {/* Zone 2: 5 concise single-line text nav links */}
@@ -393,7 +393,7 @@ export default function App() {
                 {!heroImgError ? (
                   <img
                     src={heroCampusImg}
-                    alt="Lingkungan kampus hijau SDIT Insan Cendekia Kalibaru Banyuwangi"
+                    alt="Lingkungan kampus hijau SDIT Insan Cendikia Kalibaru Banyuwangi"
                     referrerPolicy="no-referrer"
                     onError={() => setHeroImgError(true)}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -412,7 +412,7 @@ export default function App() {
 
                 <div className="relative z-10 w-full p-5 sm:p-10 lg:p-14 max-w-3xl space-y-4 sm:space-y-5">
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm font-medium text-[#CDE2D5]">
-                    <span>SD Islam Terpadu Insan Cendekia</span>
+                    <span>SD Islam Terpadu Insan Cendikia</span>
                     <span aria-hidden="true">·</span>
                     <span>Kec. Kalibaru, Banyuwangi</span>
                     <span aria-hidden="true">·</span>
@@ -429,11 +429,11 @@ export default function App() {
                     className="font-display font-bold tracking-tight text-white leading-[1.15]"
                     style={{ fontSize: 'clamp(1.75rem, 4vw, 3.35rem)', textWrap: 'balance' }}
                   >
-                    Penerimaan Murid Baru Tahun Ajaran 2026/2027
+                    Penerimaan Murid Baru Tahun Pelajaran 2027/2028
                   </h1>
 
                   <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-2xl">
-                    Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendekia Kalibaru membuka pendaftaran <strong>Gelombang 1 &amp; Gelombang 2</strong> untuk mendampingi peserta didik bertumbuh melalui pembinaan ibadah dan cinta Al-Qur’an, pembelajaran menyenangkan, serta pembiasaan hidup bersih dan disiplin.
+                    Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendikia Kalibaru membuka pendaftaran <strong>Gelombang 1 &amp; Gelombang 2</strong> untuk mendampingi peserta didik bertumbuh melalui pembinaan ibadah dan cinta Al-Qur’an, pembelajaran menyenangkan, serta pembiasaan hidup bersih dan disiplin.
                   </p>
 
                   {siteProfile.waveInfoNote && (
@@ -460,12 +460,12 @@ export default function App() {
               </div>
             </section>
 
-            {/* Visi & Misi SDIT Insan Cendekia */}
+            {/* Visi & Misi SDIT Insan Cendikia */}
             <section id="visi-misi" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pb-12">
               <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                 <div className="lg:col-span-5 space-y-3">
                   <p className="text-xs font-semibold tracking-wide text-[#0E6245]">
-                    Visi SDIT Insan Cendekia
+                    Visi SDIT Insan Cendikia
                   </p>
                   <h2
                     className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#0F2419] leading-snug"
@@ -474,7 +474,7 @@ export default function App() {
                     “Sholih, Cerdas, Mandiri.”
                   </h2>
                   <p className="text-sm text-[#4A5D52] leading-relaxed">
-                    Pendidikan di SDIT Insan Cendekia Kalibaru diarahkan untuk mendampingi peserta didik mengembangkan ibadah, akhlak mulia, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian dalam kehidupan sehari-hari.
+                    Pendidikan di SDIT Insan Cendikia Kalibaru diarahkan untuk mendampingi peserta didik mengembangkan ibadah, akhlak mulia, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian dalam kehidupan sehari-hari.
                   </p>
                 </div>
 
@@ -524,10 +524,10 @@ export default function App() {
                       className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
                       style={{ textWrap: 'balance' }}
                     >
-                      Tentang SDIT Insan Cendekia Kalibaru
+                      Tentang SDIT Insan Cendikia Kalibaru
                     </h2>
                     <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
-                      SDIT Insan Cendekia Kalibaru adalah sekolah dasar Islam terpadu di Kalibaru Kulon, Kabupaten Banyuwangi, yang berada di bawah naungan Yayasan Bina Insan Mulia Kalibaru. Pendidikan di sekolah ini berlandaskan visi “Sholih, Cerdas, Mandiri” dan diarahkan untuk mendampingi peserta didik dalam mengembangkan ibadah, akhlak, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian.
+                      SDIT Insan Cendikia Kalibaru adalah sekolah dasar Islam terpadu di Kalibaru Kulon, Kabupaten Banyuwangi, yang berada di bawah naungan Yayasan Bina Insan Mulia Kalibaru. Pendidikan di sekolah ini berlandaskan visi “Sholih, Cerdas, Mandiri” dan diarahkan untuk mendampingi peserta didik dalam mengembangkan ibadah, akhlak, kecintaan kepada Al-Qur’an, kecerdasan, serta kemandirian.
                     </p>
                     <p className="text-sm sm:text-base text-[#42554A] leading-relaxed">
                       Arah pendidikan tersebut diwujudkan melalui pembelajaran yang menyenangkan dan mendorong prestasi, disertai pembiasaan hidup bersih dan disiplin. Sekolah berupaya menghadirkan proses belajar yang membantu peserta didik tumbuh dengan nilai-nilai Islami dan bekal untuk menjalani kehidupan sehari-hari.
@@ -608,7 +608,7 @@ export default function App() {
                   <div className="bg-white border border-[#DCE4DE] rounded-xl p-6 sm:p-8 space-y-5">
                     <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-[#0E6245]">
                       <Sparkles className="w-4 h-4" />
-                      <span>Kegiatan Ekstrakurikuler SDIT Insan Cendekia</span>
+                      <span>Kegiatan Ekstrakurikuler SDIT Insan Cendikia</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {siteProfile.extracurriculars.map((eks) => (
@@ -702,7 +702,7 @@ export default function App() {
                       className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#0F2419]"
                       style={{ textWrap: 'balance' }}
                     >
-                      Aktivitas Belajar &amp; Pembiasaan Anak di SDIT Insan Cendekia Kalibaru
+                      Aktivitas Belajar &amp; Pembiasaan Anak di SDIT Insan Cendikia Kalibaru
                     </h2>
                     <p className="text-sm text-[#4A5D52] leading-relaxed">
                       Cuplikan dokumentasi asli kegiatan ibadah, proyek kreatif, literasi kelas, dan pembiasaan hidup bersih peserta didik. Ketuk foto untuk melihat tampilan penuh.
@@ -827,7 +827,7 @@ export default function App() {
                     Portal Pendaftaran &amp; Cek Status
                   </h2>
                   <p className="text-sm text-[#4A5D52]">
-                    Data pendaftar dan berkas tersimpan terpusat pada database panitia SPMB SDIT Insan Cendekia Kalibaru.
+                    Data pendaftar dan berkas tersimpan terpusat pada database panitia SPMB SDIT Insan Cendikia Kalibaru.
                   </p>
                 </div>
 
@@ -893,7 +893,7 @@ export default function App() {
             {!logoImgError && (
               <img
                 src={schoolLogoImg}
-                alt="Logo SDIT Insan Cendekia Kalibaru"
+                alt="Logo SDIT Insan Cendikia Kalibaru"
                 referrerPolicy="no-referrer"
                 onError={() => setLogoImgError(true)}
                 className="w-11 h-11 rounded-full object-contain shrink-0 bg-white border border-[#DCE4DE]"
@@ -901,7 +901,7 @@ export default function App() {
             )}
             <div className="space-y-2">
               <div className="font-display text-base font-semibold text-[#0F2419]">
-                SD Islam Terpadu Insan Cendekia Kalibaru
+                SD Islam Terpadu Insan Cendikia Kalibaru
               </div>
               <p className="text-xs sm:text-sm leading-relaxed">
                 Jl. Pahlawan RT 001 / RW 006, Desa Kalibaru Kulon, Kec. Kalibaru, Kab. Banyuwangi, Jawa Timur 68467

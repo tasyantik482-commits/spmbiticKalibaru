@@ -162,7 +162,7 @@ export default function PrintableRegistrationCard({
             <div className="flex items-start sm:items-center gap-3.5">
               <img
                 src={schoolLogoImg}
-                alt="Logo SDIT Insan Cendekia Kalibaru"
+                alt="Logo SDIT Insan Cendikia Kalibaru"
                 referrerPolicy="no-referrer"
                 className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-contain shrink-0 bg-white"
               />
@@ -171,7 +171,7 @@ export default function PrintableRegistrationCard({
                   YAYASAN BINA INSAN MULIA KALIBARU
                 </div>
                 <h3 className="font-display text-lg sm:text-xl font-bold text-[#0F2419]">
-                  SD ISLAM TERPADU INSAN CENDEKIA KALIBARU
+                  SD ISLAM TERPADU INSAN CENDIKIA KALIBARU
                 </h3>
                 <p className="text-xs text-[#4A5D52]">
                   Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon, Kec. Kalibaru, Kab. Banyuwangi 68467 · NPSN 20573193 · Akreditasi A
@@ -193,7 +193,7 @@ export default function PrintableRegistrationCard({
 
           <div className="text-center space-y-0.5">
             <h4 className="font-display text-base font-bold uppercase tracking-wide text-[#0F2419]">
-              Bukti Pendaftaran &amp; Kartu Daftar Ulang SPMB 2026/2027
+              Bukti Pendaftaran &amp; Kartu Daftar Ulang SPMB 2027/2028
             </h4>
             <p className="text-xs text-[#5A6D62]">
               Tanggal Pendaftaran: {formatTanggal(applicant.waktuDaftar)} · {applicant.gelombang || 'Gelombang 1'}
@@ -377,8 +377,8 @@ export default function PrintableRegistrationCard({
             </div>
             <div className="space-y-12 sm:space-y-14">
               <div>
-                <div className="text-[#5A6D62]">Kalibaru, .......................... 2026</div>
-                <div className="font-medium text-[#0F2419]">Panitia SPMB SDIT Insan Cendekia</div>
+                <div className="text-[#5A6D62]">Kalibaru, .......................... 2027</div>
+                <div className="font-medium text-[#0F2419]">Panitia SPMB SDIT Insan Cendikia</div>
               </div>
               <div className="font-semibold text-[#0F2419] border-t border-[#CBD5CE] pt-1.5 mx-6">
                 Petugas Verifikasi / Daftar Ulang
