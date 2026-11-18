@@ -869,6 +869,12 @@ export default function RegistrationForm({
               <dt className="text-xs font-medium text-[#5A6D62]">Status Saat Ini</dt>
               <dd className="mt-1 font-semibold text-[#B45309]">{receipt.statusVerifikasi}</dd>
             </div>
+            <div>
+              <dt className="text-xs font-medium text-[#5A6D62]">Jadwal Observasi</dt>
+              <dd className="mt-1 font-medium text-[#0F2419]">
+                Jadwal observasi akan diumumkan setelah proses verifikasi selesai
+              </dd>
+            </div>
             <div className="sm:col-span-2 lg:col-span-3">
               <dt className="text-xs font-medium text-[#5A6D62]">Keterangan</dt>
               <dd className="mt-1 text-[#2D4035]">{receipt.catatanPanitia}</dd>
@@ -1021,7 +1027,7 @@ export default function RegistrationForm({
                         <div className="text-sm font-semibold text-[#0F2419]">{opt}</div>
                         <div className="text-xs text-[#5A6D62]">
                           {opt === activeWave
-                            ? 'Dibuka saat ini · Jadwal observasi diumumkan setelah verifikasi selesai'
+                            ? 'Dibuka saat ini · Jadwal observasi akan diumumkan setelah proses verifikasi selesai'
                             : 'Jadwal observasi akan diumumkan setelah proses verifikasi selesai'}
                         </div>
                       </div>
