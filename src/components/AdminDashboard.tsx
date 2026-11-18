@@ -95,6 +95,7 @@ export default function AdminDashboard({
     useState<AdminApplicantRecord | null>(null);
 
   // Delete state
+  const [acceptingRegNo, setAcceptingRegNo] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] =
     useState<AdminApplicantRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -215,6 +216,83 @@ export default function AdminDashboard({
       );
     } finally {
       setIsSavingStatus(false);
+    }
+  };
+
+  const handleQuickAccept = async (
+    item: AdminApplicantRecord,
+    fromModal = false
+  ) => {
+    setAcceptingRegNo(item.noPendaftaran);
+    setLoadError(null);
+    if (fromModal) {
+      setSaveMessage(null);
+    }
+
+    const baseNote = (fromModal ? editNote : item.catatanPanitia || '').trim();
+    const isInitialNote =
+      !baseNote ||
+      baseNote.toLowerCase().includes('menunggu verifikasi') ||
+      baseNote.toLowerCase().includes('berkas telah diterima sistem');
+    const nextNote = isInitialNote
+      ? 'Selamat, calon murid dinyatakan DITERIMA di SDIT Insan Cendikia Kalibaru. Mohon mengikuti informasi daftar ulang dari panitia.'
+      : baseNote;
+    const obsDate = fromModal ? editObsDate : item.tanggalObservasi || '';
+    const obsTime = fromModal ? editObsTime : item.waktuObservasi || '';
+
+    try {
+      await updateRegistrationStatus(
+        item.noPendaftaran,
+        'Diterima',
+        nextNote,
+        obsDate,
+        obsTime
+      );
+      setRecords((prev) =>
+        prev.map((row) =>
+          row.noPendaftaran === item.noPendaftaran
+            ? {
+                ...row,
+                statusVerifikasi: 'Diterima',
+                catatanPanitia: nextNote,
+                tanggalObservasi: obsDate,
+                waktuObservasi: obsTime,
+              }
+            : row
+        )
+      );
+      if (selectedApplicant?.noPendaftaran === item.noPendaftaran) {
+        setEditStatus('Diterima');
+        setEditNote(nextNote);
+        setSelectedApplicant((prev) =>
+          prev
+            ? {
+                ...prev,
+                statusVerifikasi: 'Diterima',
+                catatanPanitia: nextNote,
+                tanggalObservasi: obsDate,
+                waktuObservasi: obsTime,
+              }
+            : null
+        );
+      }
+      if (fromModal) {
+        setSaveMessage('Calon murid berhasil ditandai DITERIMA.');
+      } else {
+        setDeleteSuccessNotice(
+          `Status pendaftar atas nama ${item.namaCalonMurid} (${item.noPendaftaran}) berhasil diubah menjadi DITERIMA.`
+        );
+      }
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : 'Gagal mengubah status menjadi Diterima.';
+      if (fromModal) {
+        setSaveMessage(msg);
+      } else {
+        setLoadError(msg);
+      }
+    } finally {
+      setAcceptingRegNo(null);
     }
   };
 
@@ -496,6 +574,13 @@ export default function AdminDashboard({
         `Jadwal Observasi: *${obsDate ? formatTanggal(obsDate) : 'Menyusul'}*${
           obsTime ? ` pukul *${obsTime}*` : ''
         } di Kampus SDIT Insan Cendikia Kalibaru.`
+      );
+    } else {
+      const isWave2 = (item.gelombang || '').toLowerCase().includes('2');
+      lines.push(
+        `Perkiraan Jadwal Observasi: *${
+          isWave2 ? 'Bulan April 2027 (Gelombang 2)' : 'Bulan Februari 2027 (Gelombang 1)'
+        }* — tanggal dan sesi pasti akan diumumkan lebih lanjut.`
       );
     }
     if (noteText) {
@@ -912,10 +997,18 @@ export default function AdminDashboard({
                           TB {item.tinggiBadan} cm · BB {item.beratBadan} kg
                           {item.metodePembayaran ? ` · ${item.metodePembayaran}` : ''}
                         </div>
-                        {(item.tanggalObservasi || item.waktuObservasi) && (
+                        {(item.tanggalObservasi || item.waktuObservasi) ? (
                           <div className="text-xs font-medium text-[#0E6245]">
                             Observasi: {item.tanggalObservasi ? formatTanggal(item.tanggalObservasi) : ''}{' '}
                             {item.waktuObservasi}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-[#5A6D62]">
+                            Observasi: Perkiraan{' '}
+                            {(item.gelombang || '').toLowerCase().includes('2')
+                              ? 'April 2027'
+                              : 'Februari 2027'}{' '}
+                            (tgl menyusul)
                           </div>
                         )}
                       </div>
@@ -963,18 +1056,41 @@ export default function AdminDashboard({
                         <button
                           type="button"
                           onClick={() => openDetailModal(item)}
-                          className="inline-flex items-center justify-center min-h-[42px] px-3 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg active:bg-[#0B4F37] cursor-pointer"
+                          className="inline-flex items-center justify-center min-h-[42px] px-3 py-2 text-xs font-semibold text-[#0F2419] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg active:bg-[#E4EFE8] cursor-pointer"
                         >
                           Verifikasi &amp; Detail
                         </button>
 
                         <button
                           type="button"
+                          disabled={
+                            item.statusVerifikasi === 'Diterima' ||
+                            acceptingRegNo === item.noPendaftaran
+                          }
+                          onClick={() => handleQuickAccept(item, false)}
+                          className={`inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                            item.statusVerifikasi === 'Diterima'
+                              ? 'text-[#0E6245] bg-[#EBF5EF] border border-[#CFE0D5] cursor-default'
+                              : 'text-white bg-[#0E6245] active:bg-[#0B4F37] cursor-pointer disabled:opacity-60'
+                          }`}
+                        >
+                          {acceptingRegNo === item.noPendaftaran ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          )}
+                          <span>
+                            {item.statusVerifikasi === 'Diterima' ? 'Sudah Diterima' : 'Diterima'}
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
                           onClick={() => openDeleteConfirm(item)}
-                          className="col-span-2 inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 py-2 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-lg active:bg-[#FEF6F6] cursor-pointer"
+                          className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 py-2 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-lg active:bg-[#FEF6F6] cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                          <span>Hapus (Tidak Jadi Daftar Ulang)</span>
+                          <span>Hapus</span>
                         </button>
                       </div>
                     </div>
@@ -1041,7 +1157,13 @@ export default function AdminDashboard({
                                 {item.waktuObservasi}
                               </div>
                             ) : (
-                              <div className="text-[#7E8F84] mt-0.5">Obs: Belum dijadwalkan</div>
+                              <div className="text-[#5A6D62] mt-0.5">
+                                Obs: Perkiraan{' '}
+                                {(item.gelombang || '').toLowerCase().includes('2')
+                                  ? 'Apr 2027'
+                                  : 'Feb 2027'}{' '}
+                                (tgl menyusul)
+                              </div>
                             )}
                           </td>
 
@@ -1070,7 +1192,7 @@ export default function AdminDashboard({
                           </td>
 
                           <td className="py-3.5 px-4 align-top text-right whitespace-nowrap">
-                            <div className="inline-flex items-center gap-2">
+                            <div className="inline-flex items-center gap-1.5">
                               <a
                                 href={getParentWaHref(item)}
                                 target="_blank"
@@ -1084,7 +1206,7 @@ export default function AdminDashboard({
                               <button
                                 type="button"
                                 onClick={() => setPrintApplicant(item)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-md hover:bg-[#F2F6F3] transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-md hover:bg-[#F2F6F3] transition-colors cursor-pointer"
                               >
                                 <Printer className="w-3.5 h-3.5" />
                                 <span>Cetak</span>
@@ -1092,9 +1214,34 @@ export default function AdminDashboard({
                               <button
                                 type="button"
                                 onClick={() => openDetailModal(item)}
-                                className="px-3 py-1.5 text-xs font-semibold text-white bg-[#0E6245] rounded-md hover:bg-[#0B4F37] transition-colors cursor-pointer"
+                                className="px-2.5 py-1.5 text-xs font-semibold text-[#0F2419] bg-[#F2F7F4] border border-[#CFE0D5] rounded-md hover:bg-[#E4EFE8] transition-colors cursor-pointer"
                               >
                                 Verifikasi
+                              </button>
+                              <button
+                                type="button"
+                                disabled={
+                                  item.statusVerifikasi === 'Diterima' ||
+                                  acceptingRegNo === item.noPendaftaran
+                                }
+                                onClick={() => handleQuickAccept(item, false)}
+                                title={
+                                  item.statusVerifikasi === 'Diterima'
+                                    ? 'Calon murid sudah diterima'
+                                    : 'Tandai calon murid Diterima'
+                                }
+                                className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                                  item.statusVerifikasi === 'Diterima'
+                                    ? 'text-[#0E6245] bg-[#EBF5EF] border border-[#CFE0D5] cursor-default'
+                                    : 'text-white bg-[#0E6245] hover:bg-[#0B4F37] cursor-pointer disabled:opacity-60'
+                                }`}
+                              >
+                                {acceptingRegNo === item.noPendaftaran ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                )}
+                                <span>Diterima</span>
                               </button>
                               <button
                                 type="button"
@@ -1433,6 +1580,11 @@ export default function AdminDashboard({
                   </div>
                 </div>
 
+                <p className="text-xs text-[#5A6D62]">
+                  Perkiraan observasi saat ini: <strong>Gelombang 1 = Februari 2027</strong> ·{' '}
+                  <strong>Gelombang 2 = April 2027</strong> (kosongkan kolom di atas jika tanggal resmi belum ditentukan).
+                </p>
+
                 <div>
                   <label
                     htmlFor="edit-note"
@@ -1457,13 +1609,13 @@ export default function AdminDashboard({
                 )}
 
                 <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-2.5 pt-2">
-                  <div className="flex flex-col sm:flex-row gap-2.5">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => {
                         setPrintApplicant(selectedApplicant);
                       }}
-                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] cursor-pointer"
                     >
                       <Printer className="w-3.5 h-3.5" />
                       <span>Cetak Bukti</span>
@@ -1478,7 +1630,7 @@ export default function AdminDashboard({
                       )}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg hover:bg-[#E4EFE8]"
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 py-2 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg hover:bg-[#E4EFE8]"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       <span>Kirim WA Wali</span>
@@ -1486,21 +1638,49 @@ export default function AdminDashboard({
                     <button
                       type="button"
                       onClick={() => openDeleteConfirm(selectedApplicant)}
-                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 py-2 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-lg hover:bg-[#FEF6F6] cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Hapus Data</span>
                     </button>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isSavingStatus}
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 cursor-pointer"
-                  >
-                    {isSavingStatus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Simpan Perubahan &amp; Jadwal</span>
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      disabled={
+                        isSavingStatus ||
+                        acceptingRegNo === selectedApplicant.noPendaftaran ||
+                        selectedApplicant.statusVerifikasi === 'Diterima'
+                      }
+                      onClick={() => handleQuickAccept(selectedApplicant, true)}
+                      className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                        selectedApplicant.statusVerifikasi === 'Diterima'
+                          ? 'text-[#0E6245] bg-[#EBF5EF] border border-[#CFE0D5] cursor-default'
+                          : 'text-[#0E6245] bg-[#EBF5EF] border border-[#9ED1B5] hover:bg-[#DCEFE4] cursor-pointer disabled:opacity-60'
+                      }`}
+                    >
+                      {acceptingRegNo === selectedApplicant.noPendaftaran ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      )}
+                      <span>
+                        {selectedApplicant.statusVerifikasi === 'Diterima'
+                          ? 'Sudah Diterima'
+                          : 'Tandai Diterima'}
+                      </span>
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isSavingStatus}
+                      className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2 text-xs font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 cursor-pointer"
+                    >
+                      {isSavingStatus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Simpan Perubahan &amp; Jadwal</span>
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>

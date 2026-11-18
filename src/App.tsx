@@ -125,7 +125,7 @@ const ADMISSION_STEPS = [
     step: '04',
     title: 'Verifikasi & Jadwal Observasi',
     detail:
-      'Pantau hasil verifikasi berkas dan tanggal jadwal observasi calon murid melalui tab Cek Status Pendaftaran.',
+      'Pantau hasil verifikasi berkas dan jadwal observasi (perkiraan Gelombang 1: Februari 2027, Gelombang 2: April 2027) melalui tab Cek Status.',
   },
 ];
 

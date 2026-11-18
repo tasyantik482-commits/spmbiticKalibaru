@@ -69,6 +69,7 @@ export default function PrintableRegistrationCard({
     .filter((v) => v && v !== '-')
     .join(', ');
 
+  const isWave2 = (applicant.gelombang || '').toLowerCase().includes('2');
   const observasiText =
     applicant.tanggalObservasi || applicant.waktuObservasi
       ? [
@@ -77,7 +78,9 @@ export default function PrintableRegistrationCard({
         ]
           .filter(Boolean)
           .join(' · ')
-      : 'Menunggu penjadwalan panitia';
+      : isWave2
+        ? 'Perkiraan April 2027 (tanggal resmi menyusul)'
+        : 'Perkiraan Februari 2027 (tanggal resmi menyusul)';
 
   const modalContent = (
     <div

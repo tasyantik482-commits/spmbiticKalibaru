@@ -206,23 +206,41 @@ export default function StatusCheckPanel({
           </div>
 
           {/* Highlight Jadwal Observasi (Perbaikan #6) */}
-          {(result.tanggalObservasi || result.waktuObservasi) && (
-            <div className="rounded-xl border border-[#B9DEC7] bg-[#F2F9F4] p-4 sm:p-5 flex items-start gap-3.5">
-              <CalendarClock className="w-5 h-5 text-[#0E6245] shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <div className="text-xs font-semibold uppercase tracking-wide text-[#0E6245]">
-                  Jadwal Observasi Calon Murid Baru
+          {(() => {
+            const hasExactSchedule = Boolean(
+              result.tanggalObservasi || result.waktuObservasi
+            );
+            const isWave2 = (result.gelombang || '').toLowerCase().includes('2');
+            const estimatedMonth = isWave2 ? 'Bulan April 2027' : 'Bulan Februari 2027';
+
+            return (
+              <div className="rounded-xl border border-[#B9DEC7] bg-[#F2F9F4] p-4 sm:p-5 flex items-start gap-3.5">
+                <CalendarClock className="w-5 h-5 text-[#0E6245] shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[#0E6245]">
+                    Jadwal Observasi Calon Murid Baru ({result.gelombang || 'Gelombang 1'})
+                  </div>
+                  <div className="text-base font-semibold text-[#0F2419]">
+                    {hasExactSchedule ? (
+                      <>
+                        {result.tanggalObservasi
+                          ? formatTanggal(result.tanggalObservasi)
+                          : 'Tanggal menyusul'}
+                        {result.waktuObservasi ? ` · Pukul ${result.waktuObservasi}` : ''}
+                      </>
+                    ) : (
+                      <>Perkiraan: {estimatedMonth} (Tanggal Resmi Menyusul)</>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#355242]">
+                    {hasExactSchedule
+                      ? 'Lokasi: Kampus SDIT Insan Cendikia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).'
+                      : 'Tanggal dan sesi pasti belum ditentukan panitia dan akan diinformasikan melalui halaman ini serta Grup WA wali murid. Lokasi: Kampus SDIT Insan Cendikia Kalibaru.'}
+                  </p>
                 </div>
-                <div className="text-base font-semibold text-[#0F2419]">
-                  {result.tanggalObservasi ? formatTanggal(result.tanggalObservasi) : 'Tanggal menyusul'}
-                  {result.waktuObservasi ? ` · Pukul ${result.waktuObservasi}` : ''}
-                </div>
-                <p className="text-xs text-[#355242]">
-                  Lokasi: Kampus SDIT Insan Cendikia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).
-                </p>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 text-sm">
             <div>

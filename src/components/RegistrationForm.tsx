@@ -999,6 +999,7 @@ export default function RegistrationForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {GELOMBANG_OPTIONS.map((opt) => {
                 const selected = gelombang === opt;
+                const estMonth = opt === 'Gelombang 1' ? 'Februari 2027' : 'April 2027';
                 return (
                   <label
                     key={opt}
@@ -1021,8 +1022,8 @@ export default function RegistrationForm({
                         <div className="text-sm font-semibold text-[#0F2419]">{opt}</div>
                         <div className="text-xs text-[#5A6D62]">
                           {opt === activeWave
-                            ? 'Gelombang sedang dibuka saat ini'
-                            : 'Pilihan jalur gelombang SPMB 2027/2028'}
+                            ? `Dibuka saat ini · Perkiraan observasi: ${estMonth}`
+                            : `Perkiraan observasi: ${estMonth} (tgl menyusul)`}
                         </div>
                       </div>
                     </div>
