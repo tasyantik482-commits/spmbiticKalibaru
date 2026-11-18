@@ -12,8 +12,9 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import heroCampusImg from './assets/images/hero_itic_school_campus_1794616635107.jpg';
 import schoolLogoImg from './assets/images/logo_sdit_ic_kalibaru.png';
+
+const HERO_BANNER_IMAGE_PATH = '/assets/aistudio/SPMB_1_597105f0.png';
 import { resolveGalleryImageSrc } from './config/defaultGallery';
 import RegistrationForm from './components/RegistrationForm';
 import StatusCheckPanel from './components/StatusCheckPanel';
@@ -320,34 +321,48 @@ export default function App() {
           />
         ) : (
           <>
-            {/* Hero Section */}
+            {/* Hero Section — Full-Bleed Cinematic */}
             <section id="beranda" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-8 sm:pb-10">
-              <div className="relative overflow-hidden rounded-2xl border border-[#D7E0D9] bg-[#10291D] min-h-[430px] sm:min-h-[480px] lg:min-h-[540px] flex items-end">
-                {!heroImgError ? (
-                  <img
-                    src={heroCampusImg}
-                    alt="Lingkungan kampus hijau SDIT Insan Cendikia Kalibaru Banyuwangi"
-                    referrerPolicy="no-referrer"
-                    onError={() => setHeroImgError(true)}
-                    className="absolute inset-0 w-full h-full object-cover"
+              <div className="relative overflow-hidden rounded-2xl border border-[#1E4734] bg-[#0A2117] shadow-sm">
+                {/* Latar Foto Full-Bleed (Mobile: full-bleed di atas melebur ke bawah; Desktop: menyatu dari kanan ke kiri) */}
+                <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-auto lg:absolute lg:inset-y-0 lg:right-0 lg:w-[68%] overflow-hidden bg-[#0E2A1C]">
+                  {!heroImgError ? (
+                    <img
+                      src={HERO_BANNER_IMAGE_PATH}
+                      alt="Gedung sekolah dan siswa berprestasi SDIT Insan Cendikia Kalibaru Banyuwangi"
+                      referrerPolicy="no-referrer"
+                      onError={() => setHeroImgError(true)}
+                      className="w-full h-full object-cover object-[center_22%] lg:object-[72%_24%] scale-[1.03]"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#0E4430] via-[#133828] to-[#0A2218] flex items-center justify-center">
+                      <School className="w-20 h-20 text-white/15" />
+                    </div>
+                  )}
+
+                  {/* Gradasi Halus Mobile: melebur mulus ke blok teks di bawah */}
+                  <div
+                    aria-hidden="true"
+                    className="lg:hidden pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#0A2117_0%,rgba(10,33,23,0.72)_26%,rgba(10,33,23,0.18)_58%,transparent_100%)]"
                   />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#0E4430] via-[#133828] to-[#0A2218] flex items-center justify-center">
-                    <School className="w-20 h-20 text-white/15" />
-                  </div>
-                )}
 
-                {/* Measured contrast scrim */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-[#081A12]/92 via-[#0A2016]/78 to-[#0A2016]/35 lg:bg-gradient-to-r lg:from-[#081A12]/92 lg:via-[#0A2016]/72 lg:to-transparent"
-                />
+                  {/* Gradasi Sinematik Desktop: melebur halus dari hijau pekat kiri ke foto cerah kanan */}
+                  <div
+                    aria-hidden="true"
+                    className="hidden lg:block pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#0A2117_0%,rgba(10,33,23,0.94)_22%,rgba(12,39,27,0.62)_40%,rgba(12,39,27,0.14)_60%,transparent_78%)]"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="hidden lg:block pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(7,24,16,0.48)_0%,transparent_30%,transparent_82%,rgba(7,24,16,0.22)_100%)]"
+                  />
+                </div>
 
-                <div className="relative z-10 w-full p-5 sm:p-10 lg:p-14 max-w-3xl space-y-4 sm:space-y-5">
+                {/* Kolom Teks & CTA */}
+                <div className="relative z-10 lg:w-[54%] px-6 pb-7 pt-2 sm:px-10 sm:pb-10 sm:pt-4 lg:py-12 lg:pl-12 lg:pr-6 space-y-4 sm:space-y-5">
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm font-medium text-[#CDE2D5]">
                     <span>SD Islam Terpadu Insan Cendikia</span>
                     <span aria-hidden="true">·</span>
-                    <span>Kec. Kalibaru, Banyuwangi</span>
+                    <span>Kalibaru, Banyuwangi</span>
                     <span aria-hidden="true">·</span>
                     <span className="font-mono tabular-nums">NPSN 20573193</span>
                     <span aria-hidden="true">·</span>
@@ -359,32 +374,34 @@ export default function App() {
                   </div>
 
                   <h1
-                    className="font-display font-bold tracking-tight text-white leading-[1.15]"
-                    style={{ fontSize: 'clamp(1.75rem, 4vw, 3.35rem)', textWrap: 'balance' }}
+                    className="font-display font-bold tracking-tight text-white leading-[1.14]"
+                    style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.85rem)', textWrap: 'balance' }}
                   >
                     Penerimaan Murid Baru Tahun Pelajaran 2027/2028
                   </h1>
 
-                  <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-2xl">
-                    Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendikia Kalibaru membuka pendaftaran <strong>Gelombang 1 &amp; Gelombang 2</strong> untuk mendampingi peserta didik bertumbuh melalui pembinaan ibadah dan cinta Al-Qur’an, pembelajaran menyenangkan, serta pembiasaan hidup bersih dan disiplin.
+                  <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-[50ch]">
+                    Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendikia Kalibaru membuka pendaftaran <strong>Gelombang 1 &amp; Gelombang 2</strong> untuk mendampingi peserta didik bertumbuh melalui pembinaan ibadah, cinta Al-Qur’an, serta pembiasaan hidup disiplin.
                   </p>
 
                   {siteProfile.waveInfoNote && (
-                    <p className="text-xs sm:text-sm text-[#CDE2D5]">{siteProfile.waveInfoNote}</p>
+                    <p className="text-xs sm:text-sm text-[#BBD7C6] max-w-[54ch]">
+                      {siteProfile.waveInfoNote}
+                    </p>
                   )}
 
-                  <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+                  <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
                     <button
                       type="button"
                       onClick={() => scrollToPortal('daftar')}
-                      className="inline-flex items-center justify-center min-h-[46px] px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] border border-[#197B59] rounded-lg hover:bg-[#127855] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      className="inline-flex items-center justify-center min-h-[46px] px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] border border-[#24956E] rounded-lg hover:bg-[#127855] shadow-sm transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
                       Isi Formulir Pendaftaran
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollToPortal('status')}
-                      className="inline-flex items-center justify-center min-h-[46px] px-5 py-3 text-sm font-medium text-white bg-white/10 border border-white/25 rounded-lg hover:bg-white/20 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      className="inline-flex items-center justify-center min-h-[46px] px-5 py-3 text-sm font-medium text-white bg-[#0A2117]/70 backdrop-blur-xs border border-white/25 rounded-lg hover:bg-white/15 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
                       Cek Status &amp; Jadwal Observasi
                     </button>
