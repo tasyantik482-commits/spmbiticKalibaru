@@ -1,4 +1,5 @@
 import type { SiteProfileConfig } from '../types/spmb';
+import { DEFAULT_GALLERY_ITEMS } from './defaultGallery';
 
 export const DEFAULT_SITE_PROFILE: SiteProfileConfig = {
   activeWave: 'Gelombang 1',
@@ -50,5 +51,6 @@ export const DEFAULT_SITE_PROFILE: SiteProfileConfig = {
   ],
   achievements: [],
   news: [],
-  customGallery: [],
+  customGallery: DEFAULT_GALLERY_ITEMS,
+  galleryInitialized: true,
 };

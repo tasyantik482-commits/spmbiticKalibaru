@@ -14,12 +14,7 @@ import {
 } from 'lucide-react';
 import heroCampusImg from './assets/images/hero_itic_school_campus_1794616635107.jpg';
 import schoolLogoImg from './assets/images/logo_sdit_ic_kalibaru.png';
-import kegiatanSholatDhuhaImg from './assets/images/gallery/kegiatan_sholat_dhuha.jpg';
-import kegiatanKreasiSiswaImg from './assets/images/gallery/kegiatan_kreasi_siswa.jpg';
-import kegiatanProyekP5Img from './assets/images/gallery/kegiatan_proyek_p5.jpg';
-import kegiatanPresentasiKelasImg from './assets/images/gallery/kegiatan_presentasi_kelas.jpg';
-import kegiatanKaryaKelas4Img from './assets/images/gallery/kegiatan_karya_kelas4.jpg';
-import kegiatanKelasKebersihanImg from './assets/images/gallery/kegiatan_kelas_kebersihan.jpg';
+import { resolveGalleryImageSrc } from './config/defaultGallery';
 import RegistrationForm from './components/RegistrationForm';
 import StatusCheckPanel from './components/StatusCheckPanel';
 import AdminDashboard from './components/AdminDashboard';
@@ -38,69 +33,6 @@ interface GalleryItem {
   caption: string;
   alt: string;
 }
-
-const GALERI_KEGIATAN_DASAR: GalleryItem[] = [
-  {
-    id: 'sholat-dhuha',
-    src: kegiatanSholatDhuhaImg,
-    title: 'Pembiasaan Sholat Dhuha Berjamaah',
-    category: 'Ibadah & Adab',
-    context: 'Kegiatan Harian Siswa',
-    caption:
-      'Peserta didik dibimbing langsung oleh guru melaksanakan sholat berjamaah dengan tertib untuk membangun kedisiplinan ibadah sejak dini.',
-    alt: 'Siswa SDIT Insan Cendikia Kalibaru melaksanakan sholat dhuha berjamaah dibimbing guru',
-  },
-  {
-    id: 'kreasi-siswa',
-    src: kegiatanKreasiSiswaImg,
-    title: 'Kreasi Seni & Motorik Siswa',
-    category: 'Seni & Kreativitas',
-    context: 'Pembelajaran Kelas',
-    caption:
-      'Siswi SDIT Insan Cendikia Kalibaru melatih kreativitas dan kerja sama melalui praktik melukis tangan yang menyenangkan di dalam kelas.',
-    alt: 'Empat siswi SDIT Insan Cendikia Kalibaru tersenyum menunjukkan hasil lukis tangan kreatif di kelas',
-  },
-  {
-    id: 'proyek-p5',
-    src: kegiatanProyekP5Img,
-    title: 'Proyek P5 Daur Ulang Plastik',
-    category: 'Proyek P5',
-    context: 'Kelas 1',
-    caption:
-      'Siswa kelas 1 berkreasi mengolah bahan plastik bekas menjadi karya hiasan bertema kupu-kupu dan lebah sekaligus menumbuhkan kepedulian lingkungan.',
-    alt: 'Siswa kelas 1 SDIT Insan Cendikia Kalibaru berseragam pramuka menampilkan karya daur ulang plastik',
-  },
-  {
-    id: 'presentasi-kelas',
-    src: kegiatanPresentasiKelasImg,
-    title: 'Presentasi Pembelajaran IPAS & Bahasa',
-    category: 'Literasi & Presentasi',
-    context: 'Kelas Aktif',
-    caption:
-      'Peserta didik berlatih menyampaikan gagasan dan hasil belajar IPAS serta Bahasa Indonesia secara percaya diri di depan teman-temannya.',
-    alt: 'Siswi SDIT Insan Cendikia Kalibaru mempresentasikan materi pembelajaran IPAS dan Bahasa Indonesia di kelas',
-  },
-  {
-    id: 'karya-kelas4',
-    src: kegiatanKaryaKelas4Img,
-    title: 'Pameran Karya Produk Kreatif',
-    category: 'Proyek Kelas',
-    context: 'Kelas 4',
-    caption:
-      'Siswa kelas 4 merancang dan mempresentasikan produk kerajinan fungsional hasil kolaborasi kelompok bersama wali kelas.',
-    alt: 'Siswa kelas 4 SDIT Insan Cendikia Kalibaru menampilkan hasil karya kerajinan kreatif di depan kelas',
-  },
-  {
-    id: 'kelas-kebersihan',
-    src: kegiatanKelasKebersihanImg,
-    title: 'Pentas Lagu Edukatif Hidup Bersih',
-    category: 'Karakter & Budaya Bersih',
-    context: 'Kelas 2',
-    caption:
-      'Pembiasaan hidup bersih dan sehat dikemas melalui nyanyian tematik dan gerak bersama agar mudah dipraktikkan setiap hari.',
-    alt: 'Siswi kelas 2 SDIT Insan Cendikia Kalibaru membawakan lagu edukatif tentang kebersihan di sekolah',
-  },
-];
 
 const ADMISSION_STEPS = [
   {
@@ -158,16 +90,17 @@ export default function App() {
   }, []);
 
   const allGalleryItems: GalleryItem[] = useMemo(() => {
-    const customMapped: GalleryItem[] = (siteProfile.customGallery || []).map((g) => ({
-      id: g.id,
-      src: g.imageUrl,
-      title: g.title,
-      category: g.category || 'Kegiatan Sekolah',
-      context: g.context || 'Dokumentasi Terbaru',
-      caption: g.caption || g.title,
-      alt: `${g.title} — SDIT Insan Cendikia Kalibaru`,
-    }));
-    return [...GALERI_KEGIATAN_DASAR, ...customMapped];
+    return (siteProfile.customGallery || [])
+      .filter((g) => !g.hidden)
+      .map((g) => ({
+        id: g.id,
+        src: resolveGalleryImageSrc(g),
+        title: g.title,
+        category: g.category || 'Kegiatan Sekolah',
+        context: g.context || 'Dokumentasi Terbaru',
+        caption: g.caption || g.title,
+        alt: `${g.title} — SDIT Insan Cendikia Kalibaru`,
+      }));
   }, [siteProfile.customGallery]);
 
   const markGalleryBroken = (id: string) => {
@@ -719,53 +652,59 @@ export default function App() {
                   </a>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                  {allGalleryItems.map((item, idx) => {
-                    const isBroken = Boolean(brokenGalleryIds[item.id]);
-                    return (
-                      <article
-                        key={item.id}
-                        className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setLightboxIndex(idx)}
-                          className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
-                          aria-label={`Lihat foto ${item.title} ukuran penuh`}
+                {allGalleryItems.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                    {allGalleryItems.map((item, idx) => {
+                      const isBroken = Boolean(brokenGalleryIds[item.id]);
+                      return (
+                        <article
+                          key={item.id}
+                          className="bg-white border border-[#DCE4DE] rounded-xl overflow-hidden flex flex-col"
                         >
-                          {!isBroken ? (
-                            <img
-                              src={item.src}
-                              alt={item.alt}
-                              referrerPolicy="no-referrer"
-                              loading="lazy"
-                              onError={() => markGalleryBroken(item.id)}
-                              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#E4ECE6] text-[#0E6245] px-4 text-center">
-                              <Camera className="w-8 h-8 opacity-50" />
-                              <span className="text-xs font-medium">{item.title}</span>
+                          <button
+                            type="button"
+                            onClick={() => setLightboxIndex(idx)}
+                            className="group aspect-[16/10] bg-[#E8EFEA] overflow-hidden relative w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6245]"
+                            aria-label={`Lihat foto ${item.title} ukuran penuh`}
+                          >
+                            {!isBroken ? (
+                              <img
+                                src={item.src}
+                                alt={item.alt}
+                                referrerPolicy="no-referrer"
+                                loading="lazy"
+                                onError={() => markGalleryBroken(item.id)}
+                                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#E4ECE6] text-[#0E6245] px-4 text-center">
+                                <Camera className="w-8 h-8 opacity-50" />
+                                <span className="text-xs font-medium">{item.title}</span>
+                              </div>
+                            )}
+                          </button>
+                          <div className="p-4 sm:p-5 flex-1 flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2 text-xs font-medium text-[#5A6D62]">
+                              <span className="text-[#0E6245]">{item.category}</span>
+                              <span aria-hidden="true">·</span>
+                              <span>{item.context}</span>
                             </div>
-                          )}
-                        </button>
-                        <div className="p-4 sm:p-5 flex-1 flex flex-col gap-1.5">
-                          <div className="flex items-center gap-2 text-xs font-medium text-[#5A6D62]">
-                            <span className="text-[#0E6245]">{item.category}</span>
-                            <span aria-hidden="true">·</span>
-                            <span>{item.context}</span>
+                            <h3 className="font-display text-base font-semibold text-[#0F2419] leading-snug">
+                              {item.title}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-[#4A5D52] leading-relaxed">
+                              {item.caption}
+                            </p>
                           </div>
-                          <h3 className="font-display text-base font-semibold text-[#0F2419] leading-snug">
-                            {item.title}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-[#4A5D52] leading-relaxed">
-                            {item.caption}
-                          </p>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-[#DCE4DE] bg-white p-8 text-center text-sm text-[#5A6D62]">
+                    Foto dokumentasi kegiatan sedang diperbarui oleh panitia sekolah.
+                  </div>
+                )}
               </div>
             </section>
 

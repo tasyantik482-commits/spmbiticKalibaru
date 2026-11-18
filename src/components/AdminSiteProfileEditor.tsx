@@ -2,12 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   AlertCircle,
   CheckCircle2,
+  Eye,
+  EyeOff,
   ImagePlus,
   Loader2,
+  Pencil,
   Plus,
+  RotateCcw,
   Save,
   Trash2,
+  X,
 } from 'lucide-react';
+import {
+  DEFAULT_GALLERY_ITEMS,
+  resolveGalleryImageSrc,
+} from '../config/defaultGallery';
 import {
   readFileAsPayloadWithInfo,
   saveSiteProfile,
@@ -44,6 +53,19 @@ export default function AdminSiteProfileEditor({
   const [galPendingFile, setGalPendingFile] = useState<UploadedFilePayload | null>(null);
   const [isAddingGallery, setIsAddingGallery] = useState(false);
   const galFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // State edit / ganti foto / hapus item Galeri yang sudah ada
+  const [editingGalId, setEditingGalId] = useState<string | null>(null);
+  const [editGalTitle, setEditGalTitle] = useState('');
+  const [editGalCategory, setEditGalCategory] = useState('');
+  const [editGalContext, setEditGalContext] = useState('');
+  const [editGalCaption, setEditGalCaption] = useState('');
+  const [editGalUrl, setEditGalUrl] = useState('');
+  const [editGalPendingFile, setEditGalPendingFile] =
+    useState<UploadedFilePayload | null>(null);
+  const [isSavingEditGal, setIsSavingEditGal] = useState(false);
+  const [confirmDeleteGalId, setConfirmDeleteGalId] = useState<string | null>(null);
+  const editGalFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setDraft(profile);
@@ -136,11 +158,14 @@ export default function AdminSiteProfileEditor({
       context: galContext.trim() || 'Dokumentasi Terbaru',
       caption: galCaption.trim() || galTitle.trim(),
       imageUrl: galPendingFile ? '__PENDING_UPLOAD__' : galUrl.trim(),
+      hidden: false,
+      hasCustomImage: true,
     };
 
     const nextConfig: SiteProfileConfig = {
       ...draft,
       customGallery: [...draft.customGallery, newItem],
+      galleryInitialized: true,
     };
 
     setIsAddingGallery(true);
@@ -161,13 +186,149 @@ export default function AdminSiteProfileEditor({
     }
   };
 
-  const handleRemoveGalleryItem = async (id: string) => {
+  const startEditGalleryItem = (item: CustomGalleryItem) => {
+    setEditingGalId(item.id);
+    setConfirmDeleteGalId(null);
+    setEditGalTitle(item.title);
+    setEditGalCategory(item.category);
+    setEditGalContext(item.context);
+    setEditGalCaption(item.caption);
+    setEditGalUrl(item.hasCustomImage ? item.imageUrl : '');
+    setEditGalPendingFile(null);
+    if (editGalFileInputRef.current) editGalFileInputRef.current.value = '';
+  };
+
+  const cancelEditGalleryItem = () => {
+    setEditingGalId(null);
+    setEditGalPendingFile(null);
+    if (editGalFileInputRef.current) editGalFileInputRef.current.value = '';
+  };
+
+  const handleSelectEditGalleryFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSaveError(null);
+    try {
+      const prepared = await readFileAsPayloadWithInfo(file, 450 * 1024);
+      setEditGalPendingFile(prepared.payload);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Gagal memproses foto pengganti.');
+      e.target.value = '';
+    }
+  };
+
+  const handleSaveEditGalleryItem = async (item: CustomGalleryItem) => {
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    if (!editGalTitle.trim()) {
+      setSaveError('Judul foto kegiatan tidak boleh kosong.');
+      return;
+    }
+
+    const trimmedUrl = editGalUrl.trim();
+    const isReplacingWithFile = Boolean(editGalPendingFile);
+    const isReplacingWithUrl =
+      !isReplacingWithFile && Boolean(trimmedUrl) && trimmedUrl !== item.imageUrl;
+
+    const updatedGallery = draft.customGallery.map((g) => {
+      if (g.id !== item.id) return g;
+      return {
+        ...g,
+        title: editGalTitle.trim(),
+        category: editGalCategory.trim() || 'Kegiatan Sekolah',
+        context: editGalContext.trim() || 'Dokumentasi Sekolah',
+        caption: editGalCaption.trim() || editGalTitle.trim(),
+        imageUrl: isReplacingWithFile
+          ? '__PENDING_UPLOAD__'
+          : isReplacingWithUrl
+            ? trimmedUrl
+            : g.imageUrl,
+        hasCustomImage: isReplacingWithFile || isReplacingWithUrl ? true : g.hasCustomImage,
+      };
+    });
+
     const nextConfig: SiteProfileConfig = {
       ...draft,
-      customGallery: draft.customGallery.filter((g) => g.id !== id),
+      customGallery: updatedGallery,
+      galleryInitialized: true,
+    };
+
+    setIsSavingEditGal(true);
+    try {
+      const saved = await saveSiteProfile(
+        nextConfig,
+        editGalPendingFile || undefined
+      );
+      setDraft(saved);
+      onProfileSaved(saved);
+      cancelEditGalleryItem();
+      setSaveSuccess(`Foto galeri "${editGalTitle.trim()}" berhasil diperbarui.`);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Gagal memperbarui foto galeri.');
+    } finally {
+      setIsSavingEditGal(false);
+    }
+  };
+
+  const handleToggleHideGalleryItem = async (item: CustomGalleryItem) => {
+    const nextHidden = !item.hidden;
+    const nextConfig: SiteProfileConfig = {
+      ...draft,
+      customGallery: draft.customGallery.map((g) =>
+        g.id === item.id ? { ...g, hidden: nextHidden } : g
+      ),
+      galleryInitialized: true,
     };
     setDraft(nextConfig);
     await handleSaveProfile(nextConfig);
+    setSaveSuccess(
+      nextHidden
+        ? `Foto "${item.title}" disembunyikan dari halaman utama.`
+        : `Foto "${item.title}" kembali ditampilkan di halaman utama.`
+    );
+  };
+
+  const handleRemoveGalleryItem = async (id: string) => {
+    const target = draft.customGallery.find((g) => g.id === id);
+    const nextConfig: SiteProfileConfig = {
+      ...draft,
+      customGallery: draft.customGallery.filter((g) => g.id !== id),
+      galleryInitialized: true,
+    };
+    setConfirmDeleteGalId(null);
+    if (editingGalId === id) {
+      cancelEditGalleryItem();
+    }
+    setDraft(nextConfig);
+    await handleSaveProfile(nextConfig);
+    if (target) {
+      setSaveSuccess(`Foto "${target.title}" berhasil dihapus dari galeri.`);
+    }
+  };
+
+  const handleRestoreMissingDefaults = async () => {
+    const existingIds = new Set(draft.customGallery.map((g) => g.id));
+    const missing = DEFAULT_GALLERY_ITEMS.filter((d) => !existingIds.has(d.id));
+    if (missing.length === 0) {
+      const unhiddenConfig: SiteProfileConfig = {
+        ...draft,
+        customGallery: draft.customGallery.map((g) => ({ ...g, hidden: false })),
+        galleryInitialized: true,
+      };
+      setDraft(unhiddenConfig);
+      await handleSaveProfile(unhiddenConfig);
+      setSaveSuccess('Seluruh foto galeri ditampilkan kembali.');
+      return;
+    }
+    const nextConfig: SiteProfileConfig = {
+      ...draft,
+      customGallery: [...missing, ...draft.customGallery],
+      galleryInitialized: true,
+    };
+    setDraft(nextConfig);
+    await handleSaveProfile(nextConfig);
+    setSaveSuccess(`${missing.length} foto galeri awal berhasil dipulihkan.`);
   };
 
   return (
@@ -605,18 +766,33 @@ export default function AdminSiteProfileEditor({
         </div>
       </div>
 
-      {/* 5. Dokumentasi Kegiatan Tambahan (Upload Foto Galeri) */}
+      {/* 5. Kelola Seluruh Galeri Kegiatan (6 Foto Awal + Foto Tambahan) */}
       <div className="bg-white border border-[#DCE4DE] rounded-xl p-5 sm:p-6 space-y-5">
-        <div className="border-b border-[#E6ECE7] pb-3">
-          <h2 className="font-display text-lg font-semibold text-[#0F2419]">
-            Dokumentasi Kegiatan Tambahan (Galeri Sekolah)
-          </h2>
-          <p className="text-xs text-[#5A6D62] mt-0.5">
-            Unggah foto kegiatan siswa terbaru agar tampil di bagian Galeri Kegiatan pada halaman utama.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#E6ECE7] pb-3">
+          <div>
+            <h2 className="font-display text-lg font-semibold text-[#0F2419]">
+              Kelola Galeri Dokumentasi Sekolah
+            </h2>
+            <p className="text-xs text-[#5A6D62] mt-0.5">
+              Edit judul &amp; keterangan, ganti foto, sembunyikan sementara, hapus, atau tambahkan foto baru untuk seluruh galeri di halaman utama.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={isSaving}
+            onClick={handleRestoreMissingDefaults}
+            className="inline-flex items-center justify-center gap-1.5 min-h-[36px] px-3 py-1.5 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-lg hover:bg-[#E4EFE8] disabled:opacity-60 whitespace-nowrap shrink-0 cursor-pointer self-start sm:self-auto"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Pulihkan / Tampilkan Foto Awal</span>
+          </button>
         </div>
 
+        {/* Form Tambah Foto Baru */}
         <div className="p-4 rounded-lg border border-[#DCE4DE] bg-[#F7FAF8] space-y-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-[#0E6245]">
+            Tambah Foto Kegiatan Baru
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <input
               type="text"
@@ -694,40 +870,247 @@ export default function AdminSiteProfileEditor({
           </div>
         </div>
 
-        {draft.customGallery.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {draft.customGallery.map((g) => (
-              <div
-                key={g.id}
-                className="border border-[#DCE4DE] rounded-lg overflow-hidden bg-white flex flex-col"
-              >
-                <div className="aspect-[16/10] bg-[#E8EFEA] overflow-hidden">
-                  <img
-                    src={g.imageUrl}
-                    alt={g.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-3.5 flex-1 flex flex-col justify-between gap-2">
-                  <div>
-                    <div className="text-[11px] font-medium text-[#0E6245]">
-                      {g.category} · {g.context}
+        {/* Daftar Seluruh Foto Galeri (6 Foto Awal + Tambahan) */}
+        {draft.customGallery.length === 0 ? (
+          <p className="text-xs text-[#64746B] py-6 text-center border border-dashed border-[#DCE4DE] rounded-lg">
+            Belum ada foto di galeri. Tambahkan foto baru di atas atau klik &ldquo;Pulihkan / Tampilkan Foto Awal&rdquo;.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {draft.customGallery.map((g, idx) => {
+              const isEditing = editingGalId === g.id;
+              const isConfirmDelete = confirmDeleteGalId === g.id;
+              const previewSrc =
+                isEditing && editGalPendingFile
+                  ? `data:${editGalPendingFile.mimeType};base64,${editGalPendingFile.base64}`
+                  : isEditing && editGalUrl.trim()
+                    ? editGalUrl.trim()
+                    : resolveGalleryImageSrc(g);
+
+              return (
+                <div
+                  key={g.id}
+                  className={`border rounded-xl overflow-hidden bg-white flex flex-col transition-opacity ${
+                    g.hidden
+                      ? 'border-[#E6ECE7] bg-[#FAFBF9]'
+                      : 'border-[#DCE4DE]'
+                  }`}
+                >
+                  <div className="relative aspect-[16/10] bg-[#E8EFEA] overflow-hidden">
+                    <img
+                      src={previewSrc}
+                      alt={g.title}
+                      referrerPolicy="no-referrer"
+                      className={`w-full h-full object-cover ${
+                        g.hidden && !isEditing ? 'opacity-45 grayscale-[35%]' : ''
+                      }`}
+                    />
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 text-[11px] font-mono font-semibold bg-white/95 text-[#0F2419] rounded border border-[#DCE4DE]">
+                        #{idx + 1}
+                      </span>
+                      {g.hidden ? (
+                        <span className="px-2 py-0.5 text-[11px] font-semibold bg-[#FEF3C7] text-[#92400E] rounded border border-[#F59E0B]/40">
+                          Disembunyikan
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-[11px] font-semibold bg-[#EBF5EF] text-[#0E6245] rounded border border-[#B9DEC7]">
+                          Tampil di Portal
+                        </span>
+                      )}
                     </div>
-                    <div className="text-sm font-semibold text-[#0F2419]">{g.title}</div>
-                    <p className="text-xs text-[#4A5D52] mt-0.5 line-clamp-2">{g.caption}</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveGalleryItem(g.id)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#B91C1C] hover:underline self-start cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Hapus Foto Ini</span>
-                  </button>
+
+                  {isEditing ? (
+                    <div className="p-4 space-y-3 bg-[#FAFBF9] flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-[#0E6245]">
+                          Edit Galeri #{idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={cancelEditGalleryItem}
+                          className="text-xs text-[#5A6D62] hover:text-[#0F2419] inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Batal</span>
+                        </button>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={editGalTitle}
+                        onChange={(e) => setEditGalTitle(e.target.value)}
+                        placeholder="Judul kegiatan *"
+                        className="w-full min-h-[38px] px-3 py-1.5 text-sm font-medium bg-white border border-[#CCD6CE] rounded-lg"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={editGalCategory}
+                          onChange={(e) => setEditGalCategory(e.target.value)}
+                          placeholder="Kategori"
+                          className="w-full min-h-[38px] px-3 py-1.5 text-xs bg-white border border-[#CCD6CE] rounded-lg"
+                        />
+                        <input
+                          type="text"
+                          value={editGalContext}
+                          onChange={(e) => setEditGalContext(e.target.value)}
+                          placeholder="Konteks / Kelas"
+                          className="w-full min-h-[38px] px-3 py-1.5 text-xs bg-white border border-[#CCD6CE] rounded-lg"
+                        />
+                      </div>
+
+                      <textarea
+                        rows={2}
+                        value={editGalCaption}
+                        onChange={(e) => setEditGalCaption(e.target.value)}
+                        placeholder="Keterangan / deskripsi..."
+                        className="w-full px-3 py-1.5 text-xs bg-white border border-[#CCD6CE] rounded-lg"
+                      />
+
+                      <div className="space-y-2 pt-1 border-t border-[#E6ECE7]">
+                        <div className="text-[11px] font-semibold text-[#1D3126]">
+                          Ganti Foto (opsional — biarkan kosong jika tetap pakai foto ini)
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            ref={editGalFileInputRef}
+                            id={`edit-gal-file-${g.id}`}
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                            onChange={handleSelectEditGalleryFile}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={`edit-gal-file-${g.id}`}
+                            className="inline-flex items-center justify-center gap-1.5 min-h-[36px] px-3 py-1.5 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#EFF3F0] cursor-pointer whitespace-nowrap shrink-0"
+                          >
+                            <ImagePlus className="w-3.5 h-3.5 text-[#0E6245]" />
+                            <span className="truncate max-w-[160px]">
+                              {editGalPendingFile
+                                ? editGalPendingFile.fileName
+                                : 'Pilih Foto Baru'}
+                            </span>
+                          </label>
+                          <input
+                            type="url"
+                            value={editGalUrl}
+                            onChange={(e) => {
+                              setEditGalUrl(e.target.value);
+                              setEditGalPendingFile(null);
+                            }}
+                            placeholder="atau tempel URL foto baru"
+                            className="flex-1 min-h-[36px] px-2.5 py-1.5 text-xs font-mono bg-white border border-[#CCD6CE] rounded-lg"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={cancelEditGalleryItem}
+                          disabled={isSavingEditGal}
+                          className="min-h-[36px] px-3 py-1.5 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#EFF3F0] cursor-pointer"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isSavingEditGal}
+                          onClick={() => handleSaveEditGalleryItem(g)}
+                          className="inline-flex items-center gap-1.5 min-h-[36px] px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 cursor-pointer"
+                        >
+                          {isSavingEditGal ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Save className="w-3.5 h-3.5" />
+                          )}
+                          <span>Simpan Perubahan</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="text-[11px] font-medium text-[#0E6245]">
+                          {g.category} · {g.context}
+                        </div>
+                        <div className="text-sm font-semibold text-[#0F2419]">{g.title}</div>
+                        <p className="text-xs text-[#4A5D52] leading-relaxed line-clamp-3">
+                          {g.caption}
+                        </p>
+                      </div>
+
+                      {isConfirmDelete ? (
+                        <div className="pt-2 border-t border-[#E6ECE7] flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium text-[#991B1B]">
+                            Hapus foto ini permanen?
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteGalId(null)}
+                              className="px-2.5 py-1 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-md cursor-pointer"
+                            >
+                              Batal
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isSaving}
+                              onClick={() => handleRemoveGalleryItem(g.id)}
+                              className="px-2.5 py-1 text-xs font-semibold text-white bg-[#B91C1C] rounded-md hover:bg-[#991B1B] cursor-pointer"
+                            >
+                              Ya, Hapus
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="pt-2 border-t border-[#E6ECE7] flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditGalleryItem(g)}
+                            className="inline-flex items-center gap-1 min-h-[34px] px-2.5 py-1 text-xs font-semibold text-[#0E6245] bg-[#F2F7F4] border border-[#CFE0D5] rounded-md hover:bg-[#E4EFE8] cursor-pointer"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            <span>Edit / Ganti Foto</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={isSaving}
+                            onClick={() => handleToggleHideGalleryItem(g)}
+                            className="inline-flex items-center gap-1 min-h-[34px] px-2.5 py-1 text-xs font-semibold text-[#1D3126] bg-white border border-[#CCD6CE] rounded-md hover:bg-[#F2F6F3] cursor-pointer"
+                          >
+                            {g.hidden ? (
+                              <>
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Tampilkan</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5" />
+                                <span>Sembunyikan</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteGalId(g.id)}
+                            className="inline-flex items-center gap-1 min-h-[34px] px-2.5 py-1 text-xs font-semibold text-[#B91C1C] bg-white border border-[#EBCACA] rounded-md hover:bg-[#FEF6F6] cursor-pointer ml-auto"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Hapus</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

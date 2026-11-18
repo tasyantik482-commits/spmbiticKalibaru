@@ -1,6 +1,8 @@
 import { DEFAULT_SITE_PROFILE } from '../config/defaultSiteProfile';
+import { DEFAULT_GALLERY_ITEMS } from '../config/defaultGallery';
 import type {
   AdminApplicantRecord,
+  CustomGalleryItem,
   RegistrationFormPayload,
   RegistrationResult,
   SiteProfileConfig,
@@ -629,6 +631,16 @@ function mergeSiteProfile(partial?: Partial<SiteProfileConfig> | null): SiteProf
       )
     : DEFAULT_SITE_PROFILE.extracurriculars;
 
+  let mergedGallery: CustomGalleryItem[];
+  const incomingGallery = Array.isArray(partial.customGallery) ? partial.customGallery : [];
+  if (partial.galleryInitialized) {
+    mergedGallery = incomingGallery;
+  } else {
+    const existingIds = new Set(incomingGallery.map((g) => g.id));
+    const missingDefaults = DEFAULT_GALLERY_ITEMS.filter((d) => !existingIds.has(d.id));
+    mergedGallery = [...missingDefaults, ...incomingGallery];
+  }
+
   return {
     activeWave: partial.activeWave === 'Gelombang 2' ? 'Gelombang 2' : 'Gelombang 1',
     waveInfoNote,
@@ -638,7 +650,8 @@ function mergeSiteProfile(partial?: Partial<SiteProfileConfig> | null): SiteProf
     extracurriculars,
     achievements: Array.isArray(partial.achievements) ? partial.achievements : [],
     news: Array.isArray(partial.news) ? partial.news : [],
-    customGallery: Array.isArray(partial.customGallery) ? partial.customGallery : [],
+    customGallery: mergedGallery,
+    galleryInitialized: true,
     updatedAt: partial.updatedAt,
   };
 }
@@ -695,6 +708,7 @@ export async function saveSiteProfile(
 
   const nextConfig: SiteProfileConfig = {
     ...config,
+    galleryInitialized: true,
     updatedAt: new Date().toISOString(),
   };
 
@@ -728,7 +742,19 @@ export async function saveSiteProfile(
       throw new Error(errMsg || 'Gagal menyimpan profil sekolah ke Google Spreadsheet.');
     }
 
-    const saved = mergeSiteProfile(json.data || nextConfig);
+    const rawSavedData = (json.data || nextConfig) as SiteProfileConfig;
+    const hasUnresolvedPending =
+      Boolean(galleryUpload) &&
+      Array.isArray(rawSavedData.customGallery) &&
+      rawSavedData.customGallery.some((g) => g.imageUrl === '__PENDING_UPLOAD__');
+
+    if (hasUnresolvedPending && galleryUpload) {
+      throw new Error(
+        'Apps Script belum memperbarui URL foto pengganti pada item lama. Perbarui Code.gs ke versi terbaru (Deploy Versi Baru) di Pengaturan Apps Script agar fitur ganti foto di Google Drive berfungsi penuh.'
+      );
+    }
+
+    const saved = mergeSiteProfile(rawSavedData);
     try {
       localStorage.setItem(STORAGE_SITE_PROFILE_KEY, JSON.stringify(saved));
     } catch {
@@ -739,13 +765,12 @@ export async function saveSiteProfile(
 
   // Mode pratinjau lokal
   if (galleryUpload && nextConfig.customGallery.length > 0) {
-    const lastIdx = nextConfig.customGallery.length - 1;
-    if (nextConfig.customGallery[lastIdx].imageUrl === '__PENDING_UPLOAD__') {
-      nextConfig.customGallery[lastIdx] = {
-        ...nextConfig.customGallery[lastIdx],
-        imageUrl: `data:${galleryUpload.mimeType};base64,${galleryUpload.base64}`,
-      };
-    }
+    const dataUrl = `data:${galleryUpload.mimeType};base64,${galleryUpload.base64}`;
+    nextConfig.customGallery = nextConfig.customGallery.map((item) =>
+      item.imageUrl === '__PENDING_UPLOAD__'
+        ? { ...item, imageUrl: dataUrl, hasCustomImage: true }
+        : item
+    );
   }
 
   localStorage.setItem(STORAGE_SITE_PROFILE_KEY, JSON.stringify(nextConfig));

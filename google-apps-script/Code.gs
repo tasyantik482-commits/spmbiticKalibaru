@@ -500,9 +500,11 @@ function doPost(e) {
       }
 
       if (uploadedGalleryUrl && Array.isArray(config.customGallery) && config.customGallery.length > 0) {
-        const lastIdx = config.customGallery.length - 1;
-        if (!config.customGallery[lastIdx].imageUrl || config.customGallery[lastIdx].imageUrl === '__PENDING_UPLOAD__') {
-          config.customGallery[lastIdx].imageUrl = uploadedGalleryUrl;
+        for (let i = 0; i < config.customGallery.length; i++) {
+          if (!config.customGallery[i].imageUrl || config.customGallery[i].imageUrl === '__PENDING_UPLOAD__') {
+            config.customGallery[i].imageUrl = uploadedGalleryUrl;
+            config.customGallery[i].hasCustomImage = true;
+          }
         }
       }
 

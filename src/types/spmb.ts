@@ -238,6 +238,8 @@ export interface CustomGalleryItem {
   context: string;
   caption: string;
   imageUrl: string;
+  hidden?: boolean;
+  hasCustomImage?: boolean;
 }
 
 export interface SiteProfileConfig {
@@ -250,6 +252,7 @@ export interface SiteProfileConfig {
   achievements: SiteHighlightItem[];
   news: SiteHighlightItem[];
   customGallery: CustomGalleryItem[];
+  galleryInitialized?: boolean;
   updatedAt?: string;
 }
 
