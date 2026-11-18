@@ -210,8 +210,6 @@ export default function StatusCheckPanel({
             const hasExactSchedule = Boolean(
               result.tanggalObservasi || result.waktuObservasi
             );
-            const isWave2 = (result.gelombang || '').toLowerCase().includes('2');
-            const estimatedMonth = isWave2 ? 'Bulan April 2027' : 'Bulan Februari 2027';
 
             return (
               <div className="rounded-xl border border-[#B9DEC7] bg-[#F2F9F4] p-4 sm:p-5 flex items-start gap-3.5">
@@ -229,13 +227,13 @@ export default function StatusCheckPanel({
                         {result.waktuObservasi ? ` · Pukul ${result.waktuObservasi}` : ''}
                       </>
                     ) : (
-                      <>Perkiraan: {estimatedMonth} (Tanggal Resmi Menyusul)</>
+                      <>Jadwal observasi akan diumumkan setelah proses verifikasi selesai</>
                     )}
                   </div>
                   <p className="text-xs text-[#355242]">
                     {hasExactSchedule
                       ? 'Lokasi: Kampus SDIT Insan Cendikia Kalibaru (Jl. Pahlawan RT 001 / RW 006, Kalibaru Kulon).'
-                      : 'Tanggal dan sesi pasti belum ditentukan panitia dan akan diinformasikan melalui halaman ini serta Grup WA wali murid. Lokasi: Kampus SDIT Insan Cendikia Kalibaru.'}
+                      : 'Informasi tanggal dan sesi resmi akan diperbarui di halaman Cek Status ini serta dibagikan melalui Grup WA wali murid. Lokasi: Kampus SDIT Insan Cendikia Kalibaru.'}
                   </p>
                 </div>
               </div>

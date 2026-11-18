@@ -576,11 +576,8 @@ export default function AdminDashboard({
         } di Kampus SDIT Insan Cendikia Kalibaru.`
       );
     } else {
-      const isWave2 = (item.gelombang || '').toLowerCase().includes('2');
       lines.push(
-        `Perkiraan Jadwal Observasi: *${
-          isWave2 ? 'Bulan April 2027 (Gelombang 2)' : 'Bulan Februari 2027 (Gelombang 1)'
-        }* — tanggal dan sesi pasti akan diumumkan lebih lanjut.`
+        'Jadwal Observasi: *Jadwal observasi akan diumumkan setelah proses verifikasi selesai* (melalui menu Cek Status & Grup WA).'
       );
     }
     if (noteText) {
@@ -1004,11 +1001,7 @@ export default function AdminDashboard({
                           </div>
                         ) : (
                           <div className="text-xs text-[#5A6D62]">
-                            Observasi: Perkiraan{' '}
-                            {(item.gelombang || '').toLowerCase().includes('2')
-                              ? 'April 2027'
-                              : 'Februari 2027'}{' '}
-                            (tgl menyusul)
+                            Observasi: Diumumkan setelah proses verifikasi selesai
                           </div>
                         )}
                       </div>
@@ -1158,11 +1151,7 @@ export default function AdminDashboard({
                               </div>
                             ) : (
                               <div className="text-[#5A6D62] mt-0.5">
-                                Obs: Perkiraan{' '}
-                                {(item.gelombang || '').toLowerCase().includes('2')
-                                  ? 'Apr 2027'
-                                  : 'Feb 2027'}{' '}
-                                (tgl menyusul)
+                                Obs: Diumumkan setelah verifikasi selesai
                               </div>
                             )}
                           </td>
@@ -1581,8 +1570,8 @@ export default function AdminDashboard({
                 </div>
 
                 <p className="text-xs text-[#5A6D62]">
-                  Perkiraan observasi saat ini: <strong>Gelombang 1 = Februari 2027</strong> ·{' '}
-                  <strong>Gelombang 2 = April 2027</strong> (kosongkan kolom di atas jika tanggal resmi belum ditentukan).
+                  Jika kolom di atas dikosongkan, halaman Cek Status &amp; kartu cetak akan menampilkan:{' '}
+                  <strong>“Jadwal observasi akan diumumkan setelah proses verifikasi selesai”</strong>.
                 </p>
 
                 <div>
