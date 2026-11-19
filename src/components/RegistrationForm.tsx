@@ -2297,6 +2297,19 @@ export default function RegistrationForm({
           </div>
         )}
 
+        {isSubmitting && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-3 rounded-lg border border-[#CFE0D5] bg-[#F2F7F4] px-4 py-3 text-xs sm:text-sm text-[#0E6245]"
+          >
+            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+            <span>
+              Sedang mengunggah data &amp; 5 berkas ke Google Drive sekolah. Mohon tunggu sebentar dan jangan tutup halaman ini...
+            </span>
+          </div>
+        )}
+
         <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-xs text-[#5A6D62]">
             Nomor pendaftaran dan undangan {waGroupTitle} ditampilkan setelah formulir dikirim.
@@ -2307,7 +2320,7 @@ export default function RegistrationForm({
             className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] rounded-lg hover:bg-[#0B4F37] disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            <span>{isSubmitting ? 'Mengirim Pendaftaran...' : 'Kirim Pendaftaran SPMB'}</span>
+            <span>{isSubmitting ? 'Mengunggah 5 Berkas...' : 'Kirim Pendaftaran SPMB'}</span>
           </button>
         </div>
       </form>

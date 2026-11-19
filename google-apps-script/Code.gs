@@ -491,11 +491,11 @@ function doPost(e) {
       let uploadedGalleryUrl = '';
 
       if (payload.galleryUpload && payload.galleryUpload.base64) {
-        validateFilePayload_(payload.galleryUpload, 'Foto Galeri Sekolah');
+        const galleryBytes = decodeAndValidateFilePayload_(payload.galleryUpload, 'Foto Galeri Sekolah');
         const rootFolder = getOrCreateRootFolder_();
         const mediaFolder = getOrCreateSubfolder_(rootFolder, 'Profil_Sekolah_Media');
         const safeTag = 'Galeri_' + Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyyMMdd_HHmmss');
-        const driveFile = saveBase64ToDriveWithMeta_(mediaFolder, payload.galleryUpload, safeTag);
+        const driveFile = saveBytesToDriveWithMeta_(mediaFolder, payload.galleryUpload, safeTag, galleryBytes, true);
         uploadedGalleryUrl = 'https://drive.google.com/thumbnail?id=' + driveFile.getId() + '&sz=w1200';
       }
 
@@ -624,11 +624,11 @@ function doPost(e) {
       });
     }
 
-    validateFilePayload_(files.kartuKeluarga, 'Kartu Keluarga');
-    validateFilePayload_(files.aktaKelahiran, 'Akta Kelahiran');
-    validateFilePayload_(files.pasFoto, 'Pas Foto 3x4');
-    validateFilePayload_(files.ktpOrangTua, 'KTP Orang Tua/Wali');
-    validateFilePayload_(files.buktiPembayaran, 'Bukti Pembayaran');
+    const kkBytes = decodeAndValidateFilePayload_(files.kartuKeluarga, 'Kartu Keluarga');
+    const aktaBytes = decodeAndValidateFilePayload_(files.aktaKelahiran, 'Akta Kelahiran');
+    const fotoBytes = decodeAndValidateFilePayload_(files.pasFoto, 'Pas Foto 3x4');
+    const ktpBytes = decodeAndValidateFilePayload_(files.ktpOrangTua, 'KTP Orang Tua/Wali');
+    const buktiBayarBytes = decodeAndValidateFilePayload_(files.buktiPembayaran, 'Bukti Pembayaran');
 
     const sheet = getOrCreateSheet_();
     const noPendaftaran = generateNextRegNumber_(sheet);
@@ -637,12 +637,18 @@ function doPost(e) {
     const rootFolder = getOrCreateRootFolder_();
     const safeName = namaCalonMurid.replace(/[^a-zA-Z0-9\s]/g, '').trim().slice(0, 40) || 'Pendaftar';
     const applicantFolder = rootFolder.createFolder(noPendaftaran + ' - ' + safeName);
+    try {
+      // Atur izin lihat 1x di folder pendaftar agar ke-5 file otomatis mewarisi izin tanpa 5x panggilan setSharing
+      applicantFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (folderShareErr) {
+      // Tetap lanjutkan jika kebijakan domain Workspace membatasi berbagi tautan publik
+    }
 
-    const kkUrl = saveBase64ToDrive_(applicantFolder, files.kartuKeluarga, noPendaftaran + '_Kartu_Keluarga');
-    const aktaUrl = saveBase64ToDrive_(applicantFolder, files.aktaKelahiran, noPendaftaran + '_Akta_Kelahiran');
-    const fotoUrl = saveBase64ToDrive_(applicantFolder, files.pasFoto, noPendaftaran + '_Pas_Foto_3x4');
-    const ktpUrl = saveBase64ToDrive_(applicantFolder, files.ktpOrangTua, noPendaftaran + '_KTP_Ortu_Wali');
-    const buktiBayarUrl = saveBase64ToDrive_(applicantFolder, files.buktiPembayaran, noPendaftaran + '_Bukti_Pembayaran');
+    const kkUrl = saveBytesToDrive_(applicantFolder, files.kartuKeluarga, noPendaftaran + '_Kartu_Keluarga', kkBytes);
+    const aktaUrl = saveBytesToDrive_(applicantFolder, files.aktaKelahiran, noPendaftaran + '_Akta_Kelahiran', aktaBytes);
+    const fotoUrl = saveBytesToDrive_(applicantFolder, files.pasFoto, noPendaftaran + '_Pas_Foto_3x4', fotoBytes);
+    const ktpUrl = saveBytesToDrive_(applicantFolder, files.ktpOrangTua, noPendaftaran + '_KTP_Ortu_Wali', ktpBytes);
+    const buktiBayarUrl = saveBytesToDrive_(applicantFolder, files.buktiPembayaran, noPendaftaran + '_Bukti_Pembayaran', buktiBayarBytes);
 
     const statusDefault = 'Menunggu Verifikasi';
     const catatanPanitiaDefault =
@@ -902,7 +908,7 @@ function generateNextRegNumber_(sheet) {
   return REG_PREFIX + padded;
 }
 
-function validateFilePayload_(fileObj, label) {
+function decodeAndValidateFilePayload_(fileObj, label) {
   if (!fileObj || !fileObj.base64 || !fileObj.mimeType) {
     throw new Error('Berkas ' + label + ' tidak valid.');
   }
@@ -910,23 +916,25 @@ function validateFilePayload_(fileObj, label) {
   if (decodedBytes.length > MAX_FILE_BYTES) {
     throw new Error('Ukuran berkas ' + label + ' melebihi batas maksimal 900 KB.');
   }
+  return decodedBytes;
 }
 
-function saveBase64ToDriveWithMeta_(folder, fileObj, baseFileName) {
-  const bytes = Utilities.base64Decode(fileObj.base64);
+function saveBytesToDriveWithMeta_(folder, fileObj, baseFileName, bytes, shareIndividually) {
   const ext = getExtensionFromMime_(fileObj.mimeType, fileObj.fileName);
   const blob = Utilities.newBlob(bytes, fileObj.mimeType, baseFileName + ext);
   const createdFile = folder.createFile(blob);
-  try {
-    createdFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  } catch (shareErr) {
-    // Tetap lanjutkan jika kebijakan domain Workspace membatasi berbagi tautan publik
+  if (shareIndividually) {
+    try {
+      createdFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (shareErr) {
+      // Tetap lanjutkan jika kebijakan domain Workspace membatasi berbagi tautan publik
+    }
   }
   return createdFile;
 }
 
-function saveBase64ToDrive_(folder, fileObj, baseFileName) {
-  return saveBase64ToDriveWithMeta_(folder, fileObj, baseFileName).getUrl();
+function saveBytesToDrive_(folder, fileObj, baseFileName, bytes) {
+  return saveBytesToDriveWithMeta_(folder, fileObj, baseFileName, bytes, false).getUrl();
 }
 
 function getExtensionFromMime_(mimeType, originalName) {

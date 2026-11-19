@@ -11,7 +11,7 @@ import type {
 } from '../types/spmb';
 
 export const MAX_FILE_SIZE_BYTES = 900 * 1024; // 900 KB maks per file di Apps Script
-export const TARGET_IMAGE_COMPRESS_BYTES = 480 * 1024; // Target kompresi ~480 KB agar 5 berkas tetap ringan
+export const TARGET_IMAGE_COMPRESS_BYTES = 320 * 1024; // Target ~320 KB per foto agar 5 berkas cepat diunggah di HP
 export const SPREADSHEET_ID =
   import.meta.env.VITE_SPREADSHEET_ID || '1b9aQUoVH1PSunV63VvaoMUt2S38DlSgYgc--CpqAhsw';
 
@@ -202,8 +202,9 @@ async function compressImageUnderLimit(
   targetBytes = TARGET_IMAGE_COMPRESS_BYTES
 ): Promise<File> {
   const img = await loadImageFromFile(file);
-  const maxDimensions = [1600, 1280, 1024, 820, 680];
-  const qualities = [0.82, 0.7, 0.58, 0.45];
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'berkas';
+  const maxDimensions = [1280, 1024, 840];
+  let bestCandidate: Blob | null = null;
 
   for (const maxDim of maxDimensions) {
     const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
@@ -215,38 +216,28 @@ async function compressImageUnderLimit(
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) break;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(img, 0, 0, width, height);
 
+    const qualities = maxDim === 1280 ? [0.78, 0.64] : [0.64, 0.52];
     for (const q of qualities) {
       const blob = await canvasToBlob(canvas, 'image/jpeg', q);
-      if (blob.size <= targetBytes || blob.size <= MAX_FILE_SIZE_BYTES) {
-        if (blob.size <= targetBytes) {
-          const baseName = file.name.replace(/\.[^.]+$/, '') || 'berkas';
-          return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+      if (blob.size <= targetBytes) {
+        return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+      }
+      if (blob.size <= MAX_FILE_SIZE_BYTES) {
+        if (!bestCandidate || blob.size < bestCandidate.size) {
+          bestCandidate = blob;
         }
       }
     }
-  }
 
-  // Fallback hingga MAX_FILE_SIZE_BYTES jika targetBytes sangat ketat
-  for (const maxDim of [1024, 800]) {
-    const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
-    const width = Math.max(1, Math.round(img.naturalWidth * scale));
-    const height = Math.max(1, Math.round(img.naturalHeight * scale));
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) break;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(img, 0, 0, width, height);
-    const blob = await canvasToBlob(canvas, 'image/jpeg', 0.55);
-    if (blob.size <= MAX_FILE_SIZE_BYTES) {
-      const baseName = file.name.replace(/\.[^.]+$/, '') || 'berkas';
-      return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+    // Jika sudah ada hasil di bawah 900 KB pada resolusi <= 1024px, langsung pakai agar tidak terlalu buram
+    if (bestCandidate && maxDim <= 1024) {
+      return new File([bestCandidate], `${baseName}.jpg`, { type: 'image/jpeg' });
     }
   }
 
