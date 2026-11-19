@@ -48,6 +48,7 @@ import AppsScriptModal from './AppsScriptModal';
 import AdminSiteProfileEditor from './AdminSiteProfileEditor';
 import {
   buildDapodikCsvContent,
+  downloadDapodikExcelXlsx,
   type CsvExportMode,
 } from '../utils/dapodikCsv';
 
@@ -379,6 +380,12 @@ export default function AdminDashboard({
     return { total, menunggu, proses, diterima };
   }, [records]);
 
+  const handleExportExcel = async () => {
+    if (filteredRecords.length === 0) return;
+    setCsvMenuOpen(false);
+    await downloadDapodikExcelXlsx(filteredRecords);
+  };
+
   const handleExportCsv = (mode: CsvExportMode) => {
     if (filteredRecords.length === 0) return;
     setCsvMenuOpen(false);
@@ -608,7 +615,7 @@ export default function AdminDashboard({
                   className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5" />
-                  <span>Unduh CSV (Dapodik)</span>
+                  <span>Unduh Excel / CSV (Dapodik)</span>
                   <ChevronDown className="w-3.5 h-3.5 text-[#5A6D62]" />
                 </button>
                 {csvMenuOpen && (
@@ -618,7 +625,19 @@ export default function AdminDashboard({
                       onClick={() => setCsvMenuOpen(false)}
                       aria-hidden="true"
                     />
-                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-[#DCE4DE] rounded-xl shadow-lg p-1.5 z-30 space-y-1">
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-76 max-w-[calc(100vw-2rem)] bg-white border border-[#DCE4DE] rounded-xl shadow-lg p-1.5 z-30 space-y-1">
+                      <button
+                        type="button"
+                        onClick={handleExportExcel}
+                        className="w-full text-left px-3 py-2.5 rounded-lg bg-[#F2F7F4] hover:bg-[#E4EFE8] transition-colors cursor-pointer"
+                      >
+                        <div className="text-xs font-semibold text-[#0E6245]">
+                          Excel Asli (.xlsx) — Paling Rapi (Rekomendasi)
+                        </div>
+                        <div className="text-[11px] text-[#355242] mt-0.5 leading-snug">
+                          Kolom otomatis rapi di Excel, RT/RW terpisah, NIK 16 digit &amp; No. HP utuh tanpa E+15.
+                        </div>
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleExportCsv('excel_id')}
@@ -628,7 +647,7 @@ export default function AdminDashboard({
                           CSV Excel Indonesia (Pemisah ;)
                         </div>
                         <div className="text-[11px] text-[#5A6D62] mt-0.5 leading-snug">
-                          Langsung rapi jadi kolom di Excel, NIK 16 digit &amp; No. HP tidak rusak.
+                          Format CSV untuk Excel Indonesia, NIK &amp; No. HP tetap utuh.
                         </div>
                       </button>
                       <button

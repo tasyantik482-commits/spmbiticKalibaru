@@ -27,7 +27,6 @@ function formatGenderDapodik(val: unknown): string {
 function formatDateYmd(val: unknown): string {
   const raw = cleanText(val);
   if (!raw) return '';
-  // Sudah format YYYY-MM-DD (misal tanggal lahir dari input date)
   const ymdMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (ymdMatch && !raw.includes('T')) {
     return `${ymdMatch[1]}-${ymdMatch[2]}-${ymdMatch[3]}`;
@@ -57,107 +56,88 @@ function splitRtRw(val: unknown): { rt: string; rw: string } {
   return { rt, rw };
 }
 
-function formatExcelSafeCell(
-  val: string,
-  isLongNumericText: boolean,
-  mode: CsvExportMode
-): string {
-  if (!val) return '""';
-  if (mode === 'excel_id' && isLongNumericText) {
-    return `"=""${val.replace(/"/g, '""')}"""`;
-  }
-  return `"${val.replace(/"/g, '""')}"`;
-}
+export const DAPODIK_HEADERS = [
+  'No',
+  'Nomor Pendaftaran',
+  'Gelombang',
+  'Status Verifikasi',
+  'Nama Lengkap',
+  'Nama Panggilan',
+  'Jenis Kelamin (L/P)',
+  'NIK',
+  'Tempat Lahir',
+  'Tanggal Lahir (YYYY-MM-DD)',
+  'Agama',
+  'Berkebutuhan Khusus',
+  'Alamat Jalan',
+  'RT',
+  'RW',
+  'Desa/Kelurahan',
+  'Kecamatan',
+  'Kabupaten/Kota',
+  'Provinsi',
+  'Tempat Tinggal',
+  'Anak Ke-',
+  'Jumlah Saudara Kandung',
+  'Status Anak',
+  'Tinggi Badan (cm)',
+  'Berat Badan (kg)',
+  'Lingkar Kepala (cm)',
+  'Golongan Darah',
+  'Hobi',
+  'Cita-cita',
+  'Asal TK/PAUD',
+  'Alamat TK/PAUD',
+  'No. HP/WhatsApp',
+  'Email',
+  'Nama Ayah',
+  'NIK Ayah',
+  'Pendidikan Ayah',
+  'Pekerjaan Ayah',
+  'Penghasilan Ayah',
+  'Nama Ibu',
+  'NIK Ibu',
+  'Pendidikan Ibu',
+  'Pekerjaan Ibu',
+  'Penghasilan Ibu',
+  'Nama Wali',
+  'Pendidikan Wali',
+  'Pekerjaan Wali',
+  'Penghasilan Wali',
+  'Kepemilikan Rumah',
+  'Jumlah Kendaraan',
+  'Tanggal Daftar (YYYY-MM-DD)',
+  'Metode Pembayaran',
+  'Tanggal Pembayaran',
+  'Nominal Pembayaran',
+  'Nama Pengirim Pembayaran',
+  'Tanggal Observasi',
+  'Waktu Observasi',
+  'Catatan Sekolah',
+  'Catatan Panitia',
+  'Link KK',
+  'Link Akta Kelahiran',
+  'Link Pas Foto 3x4',
+  'Link KTP Ortu/Wali',
+  'Link Bukti Pembayaran',
+];
 
-export function buildDapodikCsvContent(
-  records: AdminApplicantRecord[],
-  mode: CsvExportMode
-): string {
-  const delimiter = mode === 'excel_id' ? ';' : ',';
+// Indeks kolom teks angka panjang: NIK, RT, RW, No. HP, NIK Ayah, NIK Ibu
+const LONG_NUMERIC_COLUMNS = new Set([7, 13, 14, 31, 34, 39]);
 
-  // Urutkan menaik berdasarkan Nomor Pendaftaran agar nomor urut 1, 2, 3... rapi
+// Indeks kolom angka murni untuk sheet Excel
+const PURE_INTEGER_COLUMNS = new Set([0, 20, 21, 23, 24, 25, 52]);
+
+function prepareSortedDapodikRows(records: AdminApplicantRecord[]): string[][] {
   const sorted = [...records].sort((a, b) =>
     (a.noPendaftaran || '').localeCompare(b.noPendaftaran || '', 'id', {
       numeric: true,
     })
   );
 
-  const headers = [
-    'No',
-    'Nomor Pendaftaran',
-    'Gelombang',
-    'Status Verifikasi',
-    'Nama Lengkap',
-    'Nama Panggilan',
-    'Jenis Kelamin (L/P)',
-    'NIK',
-    'Tempat Lahir',
-    'Tanggal Lahir (YYYY-MM-DD)',
-    'Agama',
-    'Berkebutuhan Khusus',
-    'Alamat Jalan',
-    'RT',
-    'RW',
-    'Desa/Kelurahan',
-    'Kecamatan',
-    'Kabupaten/Kota',
-    'Provinsi',
-    'Tempat Tinggal',
-    'Anak Ke-',
-    'Jumlah Saudara Kandung',
-    'Status Anak',
-    'Tinggi Badan (cm)',
-    'Berat Badan (kg)',
-    'Lingkar Kepala (cm)',
-    'Golongan Darah',
-    'Hobi',
-    'Cita-cita',
-    'Asal TK/PAUD',
-    'Alamat TK/PAUD',
-    'No. HP/WhatsApp',
-    'Email',
-    'Nama Ayah',
-    'NIK Ayah',
-    'Pendidikan Ayah',
-    'Pekerjaan Ayah',
-    'Penghasilan Ayah',
-    'Nama Ibu',
-    'NIK Ibu',
-    'Pendidikan Ibu',
-    'Pekerjaan Ibu',
-    'Penghasilan Ibu',
-    'Nama Wali',
-    'Pendidikan Wali',
-    'Pekerjaan Wali',
-    'Penghasilan Wali',
-    'Kepemilikan Rumah',
-    'Jumlah Kendaraan',
-    'Tanggal Daftar (YYYY-MM-DD)',
-    'Metode Pembayaran',
-    'Tanggal Pembayaran',
-    'Nominal Pembayaran',
-    'Nama Pengirim Pembayaran',
-    'Tanggal Observasi',
-    'Waktu Observasi',
-    'Catatan Sekolah',
-    'Catatan Panitia',
-    'Link KK',
-    'Link Akta Kelahiran',
-    'Link Pas Foto 3x4',
-    'Link KTP Ortu/Wali',
-    'Link Bukti Pembayaran',
-  ];
-
-  // Indeks kolom teks angka panjang agar di Excel tidak berubah jadi 3.51E+15 atau kehilangan angka 0 depan
-  const longNumericColumns = new Set([7, 13, 14, 31, 34, 39]); // NIK, RT, RW, No HP, NIK Ayah, NIK Ibu
-
-  const headerLine = headers
-    .map((h) => `"${h.replace(/"/g, '""')}"`)
-    .join(delimiter);
-
-  const dataLines = sorted.map((r, index) => {
+  return sorted.map((r, index) => {
     const { rt, rw } = splitRtRw(r.rtRw);
-    const cells: string[] = [
+    return [
       String(index + 1),
       cleanText(r.noPendaftaran),
       cleanText(r.gelombang || 'Gelombang 1'),
@@ -224,14 +204,93 @@ export function buildDapodikCsvContent(
       cleanText(r.urlKtpOrangTua),
       cleanText(r.urlBuktiPembayaran),
     ];
+  });
+}
 
-    return cells
+function formatExcelSafeCell(
+  val: string,
+  isLongNumericText: boolean,
+  mode: CsvExportMode
+): string {
+  if (!val) return '""';
+  if (mode === 'excel_id' && isLongNumericText) {
+    return `"=""${val.replace(/"/g, '""')}"""`;
+  }
+  return `"${val.replace(/"/g, '""')}"`;
+}
+
+export function buildDapodikCsvContent(
+  records: AdminApplicantRecord[],
+  mode: CsvExportMode
+): string {
+  const delimiter = mode === 'excel_id' ? ';' : ',';
+  const rows = prepareSortedDapodikRows(records);
+
+  const headerLine = DAPODIK_HEADERS.map(
+    (h) => `"${h.replace(/"/g, '""')}"`
+  ).join(delimiter);
+
+  const dataLines = rows.map((cells) =>
+    cells
       .map((val, colIdx) =>
-        formatExcelSafeCell(val, longNumericColumns.has(colIdx), mode)
+        formatExcelSafeCell(val, LONG_NUMERIC_COLUMNS.has(colIdx), mode)
       )
-      .join(delimiter);
+      .join(delimiter)
+  );
+
+  return '\uFEFF' + [headerLine, ...dataLines].join('\r\n');
+}
+
+export async function downloadDapodikExcelXlsx(
+  records: AdminApplicantRecord[]
+): Promise<void> {
+  const XLSX = await import('xlsx');
+  const rows = prepareSortedDapodikRows(records);
+
+  const typedRows: Array<Array<string | number>> = rows.map((cells) =>
+    cells.map((val, colIdx) => {
+      if (PURE_INTEGER_COLUMNS.has(colIdx) && val !== '' && !Number.isNaN(Number(val))) {
+        return Number(val);
+      }
+      return val;
+    })
+  );
+
+  const sheetData: Array<Array<string | number>> = [
+    DAPODIK_HEADERS,
+    ...typedRows,
+  ];
+  const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+
+  // Pastikan seluruh sel NIK, No. HP, RT, RW bertipe string ('s') agar tidak pernah jadi 3.51E+15
+  for (let r = 1; r <= rows.length; r++) {
+    LONG_NUMERIC_COLUMNS.forEach((colIdx) => {
+      const addr = XLSX.utils.encode_cell({ r, c: colIdx });
+      const cell = worksheet[addr];
+      if (cell && cell.v !== '') {
+        cell.t = 's';
+        cell.v = String(cell.v);
+        cell.z = '@';
+      }
+    });
+  }
+
+  // Hitung lebar kolom otomatis agar rapi langsung saat dibuka
+  worksheet['!cols'] = DAPODIK_HEADERS.map((header, colIdx) => {
+    let maxLen = header.length;
+    for (let i = 0; i < rows.length; i++) {
+      const cellLen = (rows[i][colIdx] || '').length;
+      if (cellLen > maxLen) maxLen = cellLen;
+    }
+    const capped = Math.min(Math.max(maxLen + 3, 10), 42);
+    return { wch: capped };
   });
 
-  // Sertakan UTF-8 BOM agar Excel membaca karakter Indonesia dengan tepat
-  return '\uFEFF' + [headerLine, ...dataLines].join('\r\n');
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Dapodik SPMB');
+
+  const fileName = `data-dapodik-spmb-sditic-${new Date()
+    .toISOString()
+    .slice(0, 10)}.xlsx`;
+  XLSX.writeFile(workbook, fileName);
 }
