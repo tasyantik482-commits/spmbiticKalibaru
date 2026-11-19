@@ -3,6 +3,7 @@ import {
   AlertCircle,
   CalendarClock,
   CheckCircle2,
+  ChevronDown,
   Clock,
   Download,
   ExternalLink,
@@ -45,6 +46,10 @@ import {
 import PrintableRegistrationCard from './PrintableRegistrationCard';
 import AppsScriptModal from './AppsScriptModal';
 import AdminSiteProfileEditor from './AdminSiteProfileEditor';
+import {
+  buildDapodikCsvContent,
+  type CsvExportMode,
+} from '../utils/dapodikCsv';
 
 interface AdminDashboardProps {
   onBackToPortal: () => void;
@@ -102,6 +107,7 @@ export default function AdminDashboard({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteSuccessNotice, setDeleteSuccessNotice] = useState<string | null>(null);
   const [appsScriptModalOpen, setAppsScriptModalOpen] = useState(false);
+  const [csvMenuOpen, setCsvMenuOpen] = useState(false);
 
   const checkAppsScriptVersion = useCallback(async () => {
     const url = getConfiguredAppsScriptUrl();
@@ -373,142 +379,18 @@ export default function AdminDashboard({
     return { total, menunggu, proses, diterima };
   }, [records]);
 
-  const handleExportCsv = () => {
+  const handleExportCsv = (mode: CsvExportMode) => {
     if (filteredRecords.length === 0) return;
-    const headers = [
-      'Nomor Pendaftaran',
-      'Waktu Daftar',
-      'Gelombang',
-      'Nama Calon Murid',
-      'Nama Panggilan',
-      'Jenis Kelamin',
-      'Tempat Lahir',
-      'Tanggal Lahir',
-      'NIK Calon Murid',
-      'Anak Ke',
-      'Jumlah Saudara',
-      'Status Anak',
-      'Berkebutuhan Khusus',
-      'Agama',
-      'Golongan Darah',
-      'Hobi',
-      'Cita-cita',
-      'Tinggi Badan (cm)',
-      'Berat Badan (kg)',
-      'Lingkar Kepala (cm)',
-      'Nama Ayah',
-      'NIK Ayah',
-      'Pekerjaan Ayah',
-      'Pendidikan Ayah',
-      'Penghasilan Ayah',
-      'Nama Ibu',
-      'NIK Ibu',
-      'Pekerjaan Ibu',
-      'Pendidikan Ibu',
-      'Penghasilan Ibu',
-      'Nama Wali',
-      'No Telepon/WA',
-      'Email',
-      'Tinggal Dengan',
-      'Alamat',
-      'RT/RW',
-      'Desa/Kelurahan',
-      'Kecamatan',
-      'Kabupaten/Kota',
-      'Provinsi',
-      'Status Rumah',
-      'Jumlah Kendaraan',
-      'Asal TK/PAUD',
-      'Alamat TK/PAUD',
-      'Catatan Sekolah',
-      'Metode Pembayaran',
-      'Tanggal Pembayaran',
-      'Nominal Pembayaran',
-      'Nama Pengirim Pembayaran',
-      'Status Verifikasi',
-      'Tanggal Observasi',
-      'Waktu Observasi',
-      'Catatan Panitia',
-      'Link KK',
-      'Link Akta',
-      'Link Pas Foto 3x4',
-      'Link KTP Ortu/Wali',
-      'Link Bukti Pembayaran',
-    ];
-    const escapeCsv = (val: unknown) => {
-      const str = String(val ?? '');
-      return `"${str.replace(/"/g, '""')}"`;
-    };
-    const rows = filteredRecords.map((r) =>
-      [
-        r.noPendaftaran,
-        r.waktuDaftar,
-        r.gelombang || 'Gelombang 1',
-        r.namaCalonMurid,
-        r.namaPanggilan || '',
-        r.jenisKelamin,
-        r.tempatLahir || '',
-        r.tanggalLahir,
-        r.nikCalonMurid || '',
-        r.anakKe || '',
-        r.jumlahSaudara ?? '',
-        r.statusAnak || '',
-        r.berkebutuhanKhusus || '',
-        r.agama || '',
-        r.golonganDarah || '',
-        r.hobi || '',
-        r.citaCita || '',
-        r.tinggiBadan,
-        r.beratBadan,
-        r.lingkarKepala || '',
-        r.namaAyah || '',
-        r.nikAyah || '',
-        r.pekerjaanAyah || '',
-        r.pendidikanAyah || '',
-        r.penghasilanAyah || '',
-        r.namaIbu || '',
-        r.nikIbu || '',
-        r.pekerjaanIbu || '',
-        r.pendidikanIbu || '',
-        r.penghasilanIbu || '',
-        r.namaWali || '',
-        r.noTelepon,
-        r.email,
-        r.tinggalDengan || '',
-        r.alamatSaatIni || '',
-        r.rtRw || '',
-        r.desaKelurahan || '',
-        r.kecamatan || '',
-        r.kabupatenKota || '',
-        r.provinsi || '',
-        r.statusKepemilikan || '',
-        r.jumlahKendaraan || '',
-        r.asalTkPaud,
-        r.alamatSekolahAsal || '',
-        r.catatanSekolah,
-        r.metodePembayaran || '',
-        r.tanggalPembayaran || '',
-        r.nominalPembayaran || '',
-        r.namaPengirimPembayaran || '',
-        r.statusVerifikasi,
-        r.tanggalObservasi || '',
-        r.waktuObservasi || '',
-        r.catatanPanitia || '',
-        r.urlKartuKeluarga || '',
-        r.urlAktaKelahiran || '',
-        r.urlPasFoto || '',
-        r.urlKtpOrangTua || '',
-        r.urlBuktiPembayaran || '',
-      ]
-        .map(escapeCsv)
-        .join(',')
-    );
-    const csvContent = [headers.map(escapeCsv).join(','), ...rows].join('\n');
+    setCsvMenuOpen(false);
+    const csvContent = buildDapodikCsvContent(filteredRecords, mode);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `data-pendaftar-spmb-sditic-${new Date().toISOString().slice(0, 10)}.csv`;
+    const suffix = mode === 'excel_id' ? 'excel' : 'upload';
+    a.download = `data-dapodik-spmb-sditic-${suffix}-${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -718,15 +600,53 @@ export default function AdminDashboard({
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                 <span>Muat Ulang</span>
               </button>
-              <button
-                type="button"
-                onClick={handleExportCsv}
-                disabled={filteredRecords.length === 0}
-                className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>Unduh CSV</span>
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setCsvMenuOpen((prev) => !prev)}
+                  disabled={filteredRecords.length === 0}
+                  className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 py-2 text-xs font-semibold text-[#0F2419] bg-white border border-[#CCD6CE] rounded-lg hover:bg-[#F2F6F3] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>Unduh CSV (Dapodik)</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-[#5A6D62]" />
+                </button>
+                {csvMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-20"
+                      onClick={() => setCsvMenuOpen(false)}
+                      aria-hidden="true"
+                    />
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-[#DCE4DE] rounded-xl shadow-lg p-1.5 z-30 space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => handleExportCsv('excel_id')}
+                        className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#F2F7F4] transition-colors cursor-pointer"
+                      >
+                        <div className="text-xs font-semibold text-[#0F2419]">
+                          CSV Excel Indonesia (Pemisah ;)
+                        </div>
+                        <div className="text-[11px] text-[#5A6D62] mt-0.5 leading-snug">
+                          Langsung rapi jadi kolom di Excel, NIK 16 digit &amp; No. HP tidak rusak.
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleExportCsv('standard_upload')}
+                        className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#F2F7F4] transition-colors cursor-pointer"
+                      >
+                        <div className="text-xs font-semibold text-[#0F2419]">
+                          CSV Standar Upload (Pemisah ,)
+                        </div>
+                        <div className="text-[11px] text-[#5A6D62] mt-0.5 leading-snug">
+                          Teks murni tanpa rumus, siap diunggah ke sistem / Google Sheets.
+                        </div>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           )}
           <button
