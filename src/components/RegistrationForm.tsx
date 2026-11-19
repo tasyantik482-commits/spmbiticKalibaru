@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import {
   AlertCircle,
   Banknote,
@@ -32,7 +32,9 @@ import {
   type RegistrationResult,
   type UploadedFilePayload,
 } from '../types/spmb';
-import PrintableRegistrationCard from './PrintableRegistrationCard';
+import qrisSditIcImg from '../assets/images/qris_sdit_ic.png';
+
+const PrintableRegistrationCard = lazy(() => import('./PrintableRegistrationCard'));
 
 interface RegistrationFormProps {
   onGoToStatusCheck: (noPendaftaran: string, noTelepon: string) => void;
@@ -61,7 +63,7 @@ interface UploadedFileMeta {
   originalSizeBytes: number;
 }
 
-const QRIS_IMAGE_PATH = '/assets/aistudio/image_fbafdcb7.png';
+const QRIS_IMAGE_PATH = qrisSditIcImg;
 const OFFICIAL_FEE_AMOUNT = 50000;
 const BANK_JATIM_REKENING = '1592015532';
 
@@ -968,10 +970,14 @@ export default function RegistrationForm({
           </div>
         </div>
 
-        <PrintableRegistrationCard
-          applicant={showPrintCard ? receiptCardData : null}
-          onClose={() => setShowPrintCard(false)}
-        />
+        {showPrintCard && (
+          <Suspense fallback={null}>
+            <PrintableRegistrationCard
+              applicant={receiptCardData}
+              onClose={() => setShowPrintCard(false)}
+            />
+          </Suspense>
+        )}
       </>
     );
   }

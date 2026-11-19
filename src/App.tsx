@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import {
   Award,
   Camera,
@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ExternalLink,
   FileCheck2,
+  Loader2,
   Menu,
   Newspaper,
   School,
@@ -13,14 +14,14 @@ import {
   X,
 } from 'lucide-react';
 import schoolLogoImg from './assets/images/logo_sdit_ic_kalibaru.png';
-
-const HERO_BANNER_IMAGE_PATH = '/assets/aistudio/SPMB_1_597105f0.png';
+import heroBannerImg from './assets/images/hero_spmb_insan_cendikia.webp';
 import { resolveGalleryImageSrc } from './config/defaultGallery';
 import RegistrationForm from './components/RegistrationForm';
-import StatusCheckPanel from './components/StatusCheckPanel';
-import AdminDashboard from './components/AdminDashboard';
 import { fetchSiteProfile, getCachedSiteProfile } from './services/spmbService';
 import type { SiteProfileConfig } from './types/spmb';
+
+const StatusCheckPanel = lazy(() => import('./components/StatusCheckPanel'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 
 type PortalTab = 'daftar' | 'status';
 type ViewMode = 'portal' | 'admin';
@@ -314,25 +315,38 @@ export default function App() {
 
       <main className="flex-1">
         {viewMode === 'admin' ? (
-          <AdminDashboard
-            onBackToPortal={() => scrollToPortal('daftar')}
-            siteProfile={siteProfile}
-            onSiteProfileChange={setSiteProfile}
-          />
+          <Suspense
+            fallback={
+              <section className="max-w-[1200px] mx-auto px-4 sm:px-6 py-20 flex flex-col items-center justify-center gap-3 text-sm text-[#4A5D52]">
+                <Loader2 className="w-6 h-6 animate-spin text-[#0E6245]" />
+                <span>Memuat Panel Admin SPMB...</span>
+              </section>
+            }
+          >
+            <AdminDashboard
+              onBackToPortal={() => scrollToPortal('daftar')}
+              siteProfile={siteProfile}
+              onSiteProfileChange={setSiteProfile}
+            />
+          </Suspense>
         ) : (
           <>
-            {/* Hero Section — Full-Bleed Cinematic */}
-            <section id="beranda" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-8 sm:pb-10">
-              <div className="relative overflow-hidden rounded-2xl border border-[#1E4734] bg-[#0A2117] shadow-sm">
-                {/* Latar Foto Full-Bleed (Mobile: full-bleed di atas melebur ke bawah; Desktop: menyatu dari kanan ke kiri) */}
-                <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-auto lg:absolute lg:inset-y-0 lg:right-0 lg:w-[68%] overflow-hidden bg-[#0E2A1C]">
+            {/* Hero Section — Full-Bleed Cinematic (Responsif Mobile, Tablet, & Desktop) */}
+            <section id="beranda" className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-7 pb-8 sm:pb-10">
+              <div className="relative overflow-hidden rounded-2xl border border-[#1E4734] bg-[#0A2117] shadow-sm md:min-h-[420px] lg:min-h-[480px] flex flex-col justify-center">
+                {/* Latar Foto Full-Bleed:
+                    - Mobile (<768px): proporsi asli 3:2 agar gedung & 4 siswa utuh tanpa terpotong
+                    - Tablet & Desktop (md+): menempel full-bleed di kanan & melebur mulus ke kiri */}
+                <div className="relative w-full aspect-[3/2] md:aspect-auto md:absolute md:inset-y-0 md:right-0 md:w-[64%] lg:w-[66%] overflow-hidden bg-[#0E2A1C]">
                   {!heroImgError ? (
                     <img
-                      src={HERO_BANNER_IMAGE_PATH}
+                      src={heroBannerImg}
                       alt="Gedung sekolah dan siswa berprestasi SDIT Insan Cendikia Kalibaru Banyuwangi"
                       referrerPolicy="no-referrer"
+                      fetchPriority="high"
+                      decoding="async"
                       onError={() => setHeroImgError(true)}
-                      className="w-full h-full object-cover object-[center_22%] lg:object-[72%_24%] scale-[1.03]"
+                      className="w-full h-full object-cover object-center md:object-[78%_22%] lg:object-[68%_22%] scale-[1.025]"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#0E4430] via-[#133828] to-[#0A2218] flex items-center justify-center">
@@ -340,29 +354,27 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Gradasi Halus Mobile: melebur mulus ke blok teks di bawah */}
+                  {/* Gradasi Halus Mobile: hanya di tepi bawah agar foto tetap cerah & menyatu ke blok teks */}
                   <div
                     aria-hidden="true"
-                    className="lg:hidden pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#0A2117_0%,rgba(10,33,23,0.72)_26%,rgba(10,33,23,0.18)_58%,transparent_100%)]"
+                    className="md:hidden pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#0A2117_0%,rgba(10,33,23,0.72)_18%,rgba(10,33,23,0.16)_42%,transparent_72%)]"
                   />
 
-                  {/* Gradasi Sinematik Desktop: melebur halus dari hijau pekat kiri ke foto cerah kanan */}
+                  {/* Gradasi Sinematik Tablet & Desktop: melebur halus dari hijau pekat kiri ke foto kanan */}
                   <div
                     aria-hidden="true"
-                    className="hidden lg:block pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#0A2117_0%,rgba(10,33,23,0.94)_22%,rgba(12,39,27,0.62)_40%,rgba(12,39,27,0.14)_60%,transparent_78%)]"
+                    className="hidden md:block pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#0A2117_0%,rgba(10,33,23,0.95)_24%,rgba(12,39,27,0.62)_45%,rgba(12,39,27,0.14)_66%,transparent_84%)]"
                   />
                   <div
                     aria-hidden="true"
-                    className="hidden lg:block pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(7,24,16,0.48)_0%,transparent_30%,transparent_82%,rgba(7,24,16,0.22)_100%)]"
+                    className="hidden md:block pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(7,24,16,0.45)_0%,transparent_28%,transparent_82%,rgba(7,24,16,0.20)_100%)]"
                   />
                 </div>
 
                 {/* Kolom Teks & CTA */}
-                <div className="relative z-10 lg:w-[54%] px-6 pb-7 pt-2 sm:px-10 sm:pb-10 sm:pt-4 lg:py-12 lg:pl-12 lg:pr-6 space-y-4 sm:space-y-5">
-                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm font-medium text-[#CDE2D5]">
-                    <span>SD Islam Terpadu Insan Cendikia</span>
-                    <span aria-hidden="true">·</span>
-                    <span>Kalibaru, Banyuwangi</span>
+                <div className="relative z-10 md:w-[54%] lg:w-[51%] px-5 pb-6 pt-3 sm:px-8 sm:pb-8 sm:pt-4 md:py-10 md:pl-9 md:pr-4 lg:py-12 lg:pl-12 lg:pr-6 space-y-3.5 sm:space-y-4">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] sm:text-xs lg:text-sm font-medium text-[#CDE2D5]">
+                    <span>SDIT Insan Cendikia Kalibaru</span>
                     <span aria-hidden="true">·</span>
                     <span className="font-mono tabular-nums">NPSN 20573193</span>
                     <span aria-hidden="true">·</span>
@@ -375,35 +387,35 @@ export default function App() {
 
                   <h1
                     className="font-display font-bold tracking-tight text-white leading-[1.14]"
-                    style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.85rem)', textWrap: 'balance' }}
+                    style={{ fontSize: 'clamp(1.5rem, 2.8vw, 2.75rem)', textWrap: 'balance' }}
                   >
                     Penerimaan Murid Baru Tahun Pelajaran 2027/2028
                   </h1>
 
-                  <p className="text-sm sm:text-base text-[#E3EFE7] leading-relaxed max-w-[50ch]">
-                    Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendikia Kalibaru membuka pendaftaran <strong>Gelombang 1 &amp; Gelombang 2</strong> untuk mendampingi peserta didik bertumbuh melalui pembinaan ibadah, cinta Al-Qur’an, serta pembiasaan hidup disiplin.
+                  <p className="text-xs sm:text-sm lg:text-base text-[#E3EFE7] leading-relaxed max-w-[48ch]">
+                    Berlandaskan visi <strong className="font-semibold text-white">“Sholih, Cerdas, Mandiri”</strong>, SDIT Insan Cendikia Kalibaru membuka pendaftaran <strong>Gelombang 1 &amp; Gelombang 2</strong> untuk mendampingi peserta didik bertumbuh dalam ibadah, cinta Al-Qur’an, serta pembiasaan disiplin.
                   </p>
 
                   {siteProfile.waveInfoNote && (
-                    <p className="text-xs sm:text-sm text-[#BBD7C6] max-w-[54ch]">
+                    <p className="text-xs sm:text-[13px] text-[#BBD7C6] max-w-[50ch]">
                       {siteProfile.waveInfoNote}
                     </p>
                   )}
 
-                  <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
+                  <div className="pt-1.5 flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-start lg:items-center gap-2.5 sm:gap-3">
                     <button
                       type="button"
                       onClick={() => scrollToPortal('daftar')}
-                      className="inline-flex items-center justify-center min-h-[46px] px-6 py-3 text-sm font-semibold text-white bg-[#0E6245] border border-[#24956E] rounded-lg hover:bg-[#127855] shadow-sm transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-[#0E6245] border border-[#24956E] rounded-lg hover:bg-[#127855] shadow-sm transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
                       Isi Formulir Pendaftaran
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollToPortal('status')}
-                      className="inline-flex items-center justify-center min-h-[46px] px-5 py-3 text-sm font-medium text-white bg-[#0A2117]/70 backdrop-blur-xs border border-white/25 rounded-lg hover:bg-white/15 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      className="inline-flex items-center justify-center min-h-[44px] px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-white bg-[#0A2117]/75 backdrop-blur-xs border border-white/25 rounded-lg hover:bg-white/15 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
-                      Cek Status &amp; Jadwal Observasi
+                      Cek Status Pendaftaran
                     </button>
                   </div>
                 </div>
@@ -830,12 +842,21 @@ export default function App() {
                   waGroupUrl={siteProfile.waGroupUrl}
                 />
               ) : (
-                <StatusCheckPanel
-                  initialNoPendaftaran={prefillRegNo}
-                  initialNoTelepon={prefillPhone}
-                  waGroupTitle={siteProfile.waGroupTitle}
-                  waGroupUrl={siteProfile.waGroupUrl}
-                />
+                <Suspense
+                  fallback={
+                    <div className="bg-white border border-[#DCE4DE] rounded-xl p-10 flex items-center justify-center gap-2.5 text-sm text-[#4A5D52]">
+                      <Loader2 className="w-5 h-5 animate-spin text-[#0E6245]" />
+                      <span>Memuat panel Cek Status...</span>
+                    </div>
+                  }
+                >
+                  <StatusCheckPanel
+                    initialNoPendaftaran={prefillRegNo}
+                    initialNoTelepon={prefillPhone}
+                    waGroupTitle={siteProfile.waGroupTitle}
+                    waGroupUrl={siteProfile.waGroupUrl}
+                  />
+                </Suspense>
               )}
             </section>
           </>
